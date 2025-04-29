@@ -1,0 +1,27 @@
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+
+# Django / local database & media
+db.sqlite3
+media/
+
+# Environment file for secrets
+.env
+
+# IDE / Editor-config
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.idea/
+
+# Logs
+*.log
+
+# Windows-specific
+Thumbs.db
