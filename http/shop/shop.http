@@ -1,0 +1,161 @@
+@base_url = http://localhost:8000/api
+@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDk3ODk3LCJpYXQiOjE3NDYwOTY5OTcsImp0aSI6Ijc2YTkxZTQ5YTRkZTRhZjhiNDgyMWRhZDExMGZjNDAzIiwidXNlcl9pZCI6MX0.GNRTA_H4YAi7FDQYw_kZsK6ZR_i3E2SlcxDrJh2_I2Q
+@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NjYxMDAxNCwiaWF0IjoxNzQ2MDA1MjE0LCJqdGkiOiI5MzJlN2RlOTJkNmM0N2U4OWFjMWE3YWEwMGVjZmRlNiIsInVzZXJfaWQiOjF9.i6qysDAa5NUtTvRoeSZsIVqQ2U_pmdCNvBS-_-P-HEs
+
+### AUTHENTICATION
+
+### Login (obtain JWT)
+POST {{base_url}}/token/
+Content-Type: application/json
+
+{
+  "email": "joachimtramper@gmail.com",
+  "password": "hallo1234"
+}
+
+### Refresh token
+POST {{base_url}}/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh_token}}"
+}
+
+### PRODUCTS -----------------------------------------------------------------------------------
+
+### List products
+GET {{base_url}}/shop/products/
+Authorization: Bearer {{auth_token}}
+
+### Retrieve a single product
+GET {{base_url}}/shop/products/1/
+Authorization: Bearer {{auth_token}}
+
+### Create a product
+POST {{base_url}}/shop/products/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Eco Widget",
+  "description": "A sustainable widget for everyday use.",
+  "price": "19.99",
+  "stock": 100
+}
+
+### Update a product 
+PUT {{base_url}}/shop/products/1/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Eco Widget Plus",
+  "description": "An improved sustainable widget.",
+  "price": "24.99",
+  "stock": 80
+}
+
+### Patch a product
+PATCH {{base_url}}/shop/products/1/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "price": "54.99"
+}
+
+### Delete a product
+DELETE {{base_url}}/shop/products/52/
+Authorization: Bearer {{auth_token}}
+
+### ORDERS -----------------------------------------------------------------------------------
+
+### List orders
+GET {{base_url}}/shop/orders/
+Authorization: Bearer {{auth_token}}
+
+### Retrieve a single order
+GET {{base_url}}/shop/orders/31153702-f8f4-4007-8192-6ca96bf7b15a/
+Authorization: Bearer {{auth_token}}
+
+### Create an order
+POST {{base_url}}/shop/orders/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "items": [
+    {"product_id": 1, "quantity": 2},
+    {"product_id": 3, "quantity": 1}
+  ]
+}
+
+### Update an order
+PUT {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "status": "Pending",
+  "items": [
+    { "product_id": 1, "quantity": 3 }
+  ]
+}
+
+### PATCH an order
+PATCH {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "status": "Shipped"
+}
+
+### Delete an order
+DELETE {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
+Authorization: Bearer {{auth_token}}
+
+### ORDER ITEMS -----------------------------------------------------------------------------------
+
+### List order-items
+GET {{base_url}}/shop/order-items/
+Authorization: Bearer {{auth_token}}
+
+### Retrieve a single order-item
+GET {{base_url}}/shop/order-items/621/
+Authorization: Bearer {{auth_token}}
+
+### Create an order-item
+POST {{base_url}}/shop/order-items/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "order": "8c3dda32-ce89-48ff-88d6-18079e8895ef",
+  "product_id": 8,
+  "quantity": 5
+}
+
+### Update an order-item
+PUT {{base_url}}/shop/order-items/622/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "order": "8c3dda32-ce89-48ff-88d6-18079e8895ef",
+  "product_id": 4,
+  "quantity": 3
+}
+
+### PATCH an order-item
+PATCH {{base_url}}/shop/order-items/622/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "quantity": 10
+}
+
+### Delete an order-item
+DELETE {{base_url}}/shop/order-items/621/
+Authorization: Bearer {{auth_token}}

@@ -1,0 +1,68 @@
+@base_url = http://localhost:8000/api
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDk5NzE5LCJpYXQiOjE3NDYwOTg4MTksImp0aSI6IjZiNGI5ZGI3N2UxYTRiNGNhMWU3ZDZkYjEyNTBkMjM5IiwidXNlcl9pZCI6M30.rTm4GUGtCO9X396CdqfW1ybLoz-4GfYtpJLn4AJutoc
+
+### Login User (obtain JWT) ------------------------------------------------------------------------------------
+
+POST {{base_url}}/token/
+Content-Type: application/json
+
+{
+  "email": "danielle31@example.com",
+  "password": "J20vJlWV1Gg0"
+}
+
+
+### ANONYMOUS (no Authorization-header) ---------------------------------------------------------------------------
+
+### 1.1 Product list (success - 200 OK)
+GET {{base_url}}/shop/products/
+
+### 1.2 Product create (fail - 401 Unauthorized)
+POST {{base_url}}/shop/products/
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "description": "Test",
+  "price": 9.99,
+  "stock": 1
+}
+
+### 1.3 Order list (fail - 401 Unauthorized)
+GET {{base_url}}/shop/orders/
+
+
+# AUTHENTICATED USER -------------------------------------------------------------------------------------------
+
+### 2.1 Order create (success - 201 Created)
+POST {{base_url}}/shop/orders/
+Content-Type: application/json
+Authorization: Bearer {{user_token}}
+
+{
+  "items": [
+    {"product_id": 1, "quantity": 2},
+    {"product_id": 3, "quantity": 1}
+  ]
+}
+
+### 2.2 List own orders (only own orders - 200 OK)
+GET {{base_url}}/shop/orders/
+Authorization: Bearer {{user_token}}
+
+### 2.3 Retrieve someone else’s order (fail - 404 Not Found)
+GET {{base_url}}/shop/orders/31153702-f8f4-4007-8192-6ca96bf7b15a/
+Authorization: Bearer {{user_token}}
+
+### 2.4 Delete own pending order (success - 204 No Content)
+DELETE {{base_url}}/shop/orders/a36f6856-347c-4b0c-afee-15e8405c93b9/
+Authorization: Bearer {{user_token}}
+
+### 2.5 Delete someone else’s order (fail - 404 Not Found)
+DELETE {{base_url}}/shop/orders/31153702-f8f4-4007-8192-6ca96bf7b15a/
+Authorization: Bearer {{user_token}}
+
+
+# ADMIN USER ----------------------------------------------------------------------------------------------
+
+# Already tested in .shop.http

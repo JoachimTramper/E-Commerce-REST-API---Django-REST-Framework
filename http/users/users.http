@@ -1,0 +1,60 @@
+@base_url = http://localhost:8000/api
+@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDg5ODgxLCJpYXQiOjE3NDYwODg5ODEsImp0aSI6ImZjMTRhOWMyNjRkMzQ3YzliMDBmMDBhMTRiMTY1ZTg5IiwidXNlcl9pZCI6MX0.titGxCbrn3JhhFKJBXO0As0i_Kkx7yNxMs4zwdWjJYo
+@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NjYxMDAxNCwiaWF0IjoxNzQ2MDA1MjE0LCJqdGkiOiI5MzJlN2RlOTJkNmM0N2U4OWFjMWE3YWEwMGVjZmRlNiIsInVzZXJfaWQiOjF9.i6qysDAa5NUtTvRoeSZsIVqQ2U_pmdCNvBS-_-P-HEs
+
+### AUTHENTICATION
+
+### Login (obtain JWT)
+POST {{base_url}}/token/
+Content-Type: application/json
+
+{
+  "email": "joachimtramper@gmail.com",
+  "password": "hallo1234"
+}
+
+### Refresh token
+POST {{base_url}}/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh_token}}"
+}
+
+### ADDRESSES -----------------------------------------------------------------------------------
+
+### List my addresses
+GET {{base_url}}/users/addresses/
+Authorization: Bearer {{auth_token}}
+
+### Create an address
+POST {{base_url}}/users/addresses/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "label": "Home",
+  "street": "Maple Street",
+  "number": "12A",
+  "zipcode": "12345",
+  "city": "Springfield",
+  "country": "USA",
+  "is_billing": false,
+  "is_shipping": true
+}
+
+### PROFILE -----------------------------------------------------------------------------------
+
+### Get my profile
+GET {{base_url}}/users/profile/
+Authorization: Bearer {{auth_token}}
+
+### Update my profile
+PUT {{base_url}}/users/profile/
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "phone_number": "+31612345678",
+  "date_of_birth": "1990-01-01"
+}
