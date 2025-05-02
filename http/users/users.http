@@ -1,6 +1,6 @@
 @base_url = http://localhost:8000/api
-@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDg5ODgxLCJpYXQiOjE3NDYwODg5ODEsImp0aSI6ImZjMTRhOWMyNjRkMzQ3YzliMDBmMDBhMTRiMTY1ZTg5IiwidXNlcl9pZCI6MX0.titGxCbrn3JhhFKJBXO0As0i_Kkx7yNxMs4zwdWjJYo
-@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NjYxMDAxNCwiaWF0IjoxNzQ2MDA1MjE0LCJqdGkiOiI5MzJlN2RlOTJkNmM0N2U4OWFjMWE3YWEwMGVjZmRlNiIsInVzZXJfaWQiOjF9.i6qysDAa5NUtTvRoeSZsIVqQ2U_pmdCNvBS-_-P-HEs
+@auth_token = 
+@refresh_token = 
 
 ### AUTHENTICATION
 
@@ -10,7 +10,7 @@ Content-Type: application/json
 
 {
   "email": "joachimtramper@gmail.com",
-  "password": "hallo1234"
+  "password": ""
 }
 
 ### Refresh token

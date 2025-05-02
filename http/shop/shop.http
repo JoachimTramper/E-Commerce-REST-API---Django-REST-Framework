@@ -1,6 +1,6 @@
 @base_url = http://localhost:8000/api
-@auth_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDk3ODk3LCJpYXQiOjE3NDYwOTY5OTcsImp0aSI6Ijc2YTkxZTQ5YTRkZTRhZjhiNDgyMWRhZDExMGZjNDAzIiwidXNlcl9pZCI6MX0.GNRTA_H4YAi7FDQYw_kZsK6ZR_i3E2SlcxDrJh2_I2Q
-@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NjYxMDAxNCwiaWF0IjoxNzQ2MDA1MjE0LCJqdGkiOiI5MzJlN2RlOTJkNmM0N2U4OWFjMWE3YWEwMGVjZmRlNiIsInVzZXJfaWQiOjF9.i6qysDAa5NUtTvRoeSZsIVqQ2U_pmdCNvBS-_-P-HEs
+@auth_token = 
+@refresh_token = 
 
 ### AUTHENTICATION
 

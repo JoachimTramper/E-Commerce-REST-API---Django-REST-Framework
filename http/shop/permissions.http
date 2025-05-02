@@ -1,5 +1,5 @@
 @base_url = http://localhost:8000/api
-@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ2MDk5NzE5LCJpYXQiOjE3NDYwOTg4MTksImp0aSI6IjZiNGI5ZGI3N2UxYTRiNGNhMWU3ZDZkYjEyNTBkMjM5IiwidXNlcl9pZCI6M30.rTm4GUGtCO9X396CdqfW1ybLoz-4GfYtpJLn4AJutoc
+@user_token = 
 
 ### Login User (obtain JWT) ------------------------------------------------------------------------------------
 
