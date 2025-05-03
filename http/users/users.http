@@ -1,36 +1,38 @@
 @base_url = http://localhost:8000/api
-@auth_token = 
-@refresh_token = 
-
-### AUTHENTICATION
+@ACCESS = 
+@REFRESH = 
 
 ### Login (obtain JWT)
+
 POST {{base_url}}/token/
 Content-Type: application/json
 
-{
-  "email": "joachimtramper@gmail.com",
-  "password": ""
-}
+[
+  {"email": "joachimtramper@gmail.com"},
+  {"password": ""}
+  ]
+
+> {% client.global.set("ACCESS", response.body.access) %}
+> {% client.global.set("REFRESH", response.body.refresh) %}
 
 ### Refresh token
 POST {{base_url}}/token/refresh/
 Content-Type: application/json
 
 {
-  "refresh": "{{refresh_token}}"
+  "refresh": "{{REFRESH}}"
 }
 
-### ADDRESSES -----------------------------------------------------------------------------------
+# ADDRESSES -----------------------------------------------------------------------------------
 
 ### List my addresses
 GET {{base_url}}/users/addresses/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Create an address
 POST {{base_url}}/users/addresses/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "label": "Home",
@@ -47,12 +49,12 @@ Authorization: Bearer {{auth_token}}
 
 ### Get my profile
 GET {{base_url}}/users/profile/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Update my profile
 PUT {{base_url}}/users/profile/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "phone_number": "+31612345678",

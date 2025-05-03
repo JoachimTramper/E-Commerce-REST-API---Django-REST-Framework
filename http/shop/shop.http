@@ -1,40 +1,42 @@
 @base_url = http://localhost:8000/api
-@auth_token = 
-@refresh_token = 
-
-### AUTHENTICATION
+@ACCESS = 
+@REFRESH = 
 
 ### Login (obtain JWT)
+
 POST {{base_url}}/token/
 Content-Type: application/json
 
 {
-  "email": "joachimtramper@gmail.com",
-  "password": "hallo1234"
+  "username": "joachimtramper@gmail.com", 
+  "password": ""
 }
+
+> {% client.global.set("ACCESS", response.body.access) %}
+> {% client.global.set("REFRESH", response.body.refresh) %}
+# > {% client.log("REFRESH: " + response.body.refresh) %}
 
 ### Refresh token
 POST {{base_url}}/token/refresh/
 Content-Type: application/json
 
-{
-  "refresh": "{{refresh_token}}"
-}
+{"refresh": "{{REFRESH}}"}
 
-### PRODUCTS -----------------------------------------------------------------------------------
 
 ### List products
 GET {{base_url}}/shop/products/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
+
+> {% client.log("Statuscode: " + response.status) %}
 
 ### Retrieve a single product
 GET {{base_url}}/shop/products/1/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Create a product
 POST {{base_url}}/shop/products/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "name": "Eco Widget",
@@ -46,7 +48,7 @@ Authorization: Bearer {{auth_token}}
 ### Update a product 
 PUT {{base_url}}/shop/products/1/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "name": "Eco Widget Plus",
@@ -58,7 +60,7 @@ Authorization: Bearer {{auth_token}}
 ### Patch a product
 PATCH {{base_url}}/shop/products/1/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "price": "54.99"
@@ -66,22 +68,22 @@ Authorization: Bearer {{auth_token}}
 
 ### Delete a product
 DELETE {{base_url}}/shop/products/52/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### ORDERS -----------------------------------------------------------------------------------
 
 ### List orders
 GET {{base_url}}/shop/orders/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Retrieve a single order
 GET {{base_url}}/shop/orders/31153702-f8f4-4007-8192-6ca96bf7b15a/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Create an order
 POST {{base_url}}/shop/orders/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "items": [
@@ -93,7 +95,7 @@ Authorization: Bearer {{auth_token}}
 ### Update an order
 PUT {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "status": "Pending",
@@ -105,7 +107,7 @@ Authorization: Bearer {{auth_token}}
 ### PATCH an order
 PATCH {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "status": "Shipped"
@@ -113,22 +115,22 @@ Authorization: Bearer {{auth_token}}
 
 ### Delete an order
 DELETE {{base_url}}/shop/orders/8c3dda32-ce89-48ff-88d6-18079e8895ef/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### ORDER ITEMS -----------------------------------------------------------------------------------
 
 ### List order-items
 GET {{base_url}}/shop/order-items/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Retrieve a single order-item
 GET {{base_url}}/shop/order-items/621/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 ### Create an order-item
 POST {{base_url}}/shop/order-items/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "order": "8c3dda32-ce89-48ff-88d6-18079e8895ef",
@@ -139,7 +141,7 @@ Authorization: Bearer {{auth_token}}
 ### Update an order-item
 PUT {{base_url}}/shop/order-items/622/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "order": "8c3dda32-ce89-48ff-88d6-18079e8895ef",
@@ -150,7 +152,7 @@ Authorization: Bearer {{auth_token}}
 ### PATCH an order-item
 PATCH {{base_url}}/shop/order-items/622/
 Content-Type: application/json
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
 
 {
   "quantity": 10
@@ -158,4 +160,9 @@ Authorization: Bearer {{auth_token}}
 
 ### Delete an order-item
 DELETE {{base_url}}/shop/order-items/621/
-Authorization: Bearer {{auth_token}}
+Authorization: Bearer {{ACCESS}}
+
+### Debug time
+GET https://jsonplaceholder.typicode.com/todos/1
+
+> {% client.log("🛠  Hello from REST Client!") %}

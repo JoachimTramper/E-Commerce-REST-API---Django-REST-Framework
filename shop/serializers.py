@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.request import Request
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from .models import Product, Order, OrderItem
@@ -40,6 +41,21 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     def get_item_subtotal(self, obj):
         return obj.product.price * obj.quantity
+    
+    def validate(self, data):
+        qty     = data.get('quantity')
+        product = data.get('product')
+        if qty is None:
+            return data
+
+        if qty > product.stock:
+            msg = (
+                f'You ordered {qty}, '
+                f'but there are only {product.stock} in stock.'
+            )
+            raise serializers.ValidationError({'quantity': msg})
+
+        return data
 
     def validate_quantity(self, value):
         if value <= 0:
@@ -98,13 +114,11 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     
 
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-    items = OrderItemSerializer(many=True, read_only=True)
-    total_amount = serializers.SerializerMethodField()
-    status = serializers.ChoiceField(
-        choices=Order.StatusChoices.choices,
-        read_only=True
-    )
+    # user komt automatisch uit request.user
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    items = OrderItemSerializer(many=True)
+    status       = serializers.ChoiceField(read_only=True, choices=Order.StatusChoices.choices)
+    total_amount = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
@@ -112,6 +126,23 @@ class OrderSerializer(serializers.ModelSerializer):
             'order_id', 'order_number', 'user',
             'created_at', 'status', 'items', 'total_amount'
         ]
+        read_only_fields = ['order_id', 'order_number', 'created_at', 'status', 'total_amount']
+    
+    def validate(self, attrs):
+        # Make sure there is at least one item in the order
+        items = attrs.get('items') or []
+        if not items:
+            raise serializers.ValidationError({
+                'items': 'Order must contain at least one item.'
+            })
+        return attrs
 
     def get_total_amount(self, obj):
         return obj.total_amount
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        order = Order.objects.create(**validated_data)
+        for item_data in items_data:
+            OrderItemSerializer().create({**item_data, 'order': order})
+        return order
