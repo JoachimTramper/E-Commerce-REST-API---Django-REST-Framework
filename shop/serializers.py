@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.request import Request
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from .models import Product, Order, OrderItem
@@ -48,7 +47,7 @@ class OrderItemDetailSerializer(serializers.ModelSerializer):
             return data
 
         if qty > product.stock:
-            msg = f"You ordered {qty}, " f"but there are only {product.stock} in stock."
+            msg = f"You ordered {qty}, but there are only {product.stock} in stock."
             raise serializers.ValidationError({"quantity": msg})
 
         return data
