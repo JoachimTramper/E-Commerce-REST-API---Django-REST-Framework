@@ -2,7 +2,7 @@
 
 max-line-length = 100
 
-extend-ignore = E203, W503, W291
+extend-ignore = E203, W503, W291, W293
 
 exclude =
     .git,
@@ -10,7 +10,11 @@ exclude =
     .venv,
     **/migrations/*,
     shop/backup.py,
-    shop/management/commands/*
+    shop/management/commands/*,
+    ecommerce_api/*.py,       # settings.py, wsgi.py, urls.py
+    users/management/commands/*
 
 per-file-ignores =
-    shop/tests/*.py: E302, E501
+    */tests/*.py: E302, E501, E231
+    shop/migrations/*.py: ALL
+    users/migrations/*.py: ALL
