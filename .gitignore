@@ -25,3 +25,6 @@ media/
 
 # Windows-specific
 Thumbs.db
+
+# Backup files
+shop/backup.py
