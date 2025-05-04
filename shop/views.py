@@ -10,7 +10,7 @@ from .serializers import (
     OrderItemDetailSerializer,
 )
 from .permissions import IsOwnerAndPendingOrAdmin
-from shop.pagination import FlexiblePageNumberPagination
+from .pagination import FlexiblePageNumberPagination
 
 
 # Products: everyone can see, only staff can create/update/delete
