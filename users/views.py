@@ -1,8 +1,10 @@
-from rest_framework import viewsets
 from django.contrib.auth import get_user_model
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import CustomerProfile, Address
-from .serializers import UserSerializer, CustomerProfileSerializer, AddressSerializer
+
+from .models import Address, CustomerProfile
+from .serializers import (AddressSerializer, CustomerProfileSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 

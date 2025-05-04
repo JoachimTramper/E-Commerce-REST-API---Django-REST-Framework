@@ -1,5 +1,6 @@
 from rest_framework.routers import DefaultRouter
-from .views import ProductViewSet, OrderViewSet, OrderItemViewSet
+
+from .views import OrderItemViewSet, OrderViewSet, ProductViewSet
 
 app_name = "shop"  # Namespace for the shop app
 

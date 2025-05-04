@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
-from shop.models import Product, Order, OrderItem
+
+from shop.models import Order, OrderItem, Product
 
 User = get_user_model()
 

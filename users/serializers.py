@@ -1,6 +1,7 @@
 # users/serializers.py
 from rest_framework import serializers
-from .models import User, CustomerProfile, Address
+
+from .models import Address, CustomerProfile, User
 
 
 class CustomerProfileSerializer(serializers.ModelSerializer):

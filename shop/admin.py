@@ -1,6 +1,7 @@
 # shop/admin.py
 from django.contrib import admin
-from .models import Product, Order, OrderItem
+
+from .models import Order, OrderItem, Product
 
 
 class OrderItemInline(admin.TabularInline):

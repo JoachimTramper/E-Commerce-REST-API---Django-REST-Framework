@@ -1,7 +1,9 @@
 import random
-from faker import Faker
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from faker import Faker
+
 from shop.models import Order, OrderItem, Product
 from users.models import CustomerProfile
 

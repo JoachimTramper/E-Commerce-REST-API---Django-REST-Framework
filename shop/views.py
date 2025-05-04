@@ -1,16 +1,12 @@
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
-from .models import Product, Order, OrderItem
-from .serializers import (
-    ProductSerializer,
-    OrderListSerializer,
-    OrderDetailSerializer,
-    OrderItemListSerializer,
-    OrderCreateSerializer,
-    OrderItemDetailSerializer,
-)
-from .permissions import IsOwnerAndPendingOrAdmin
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+
+from .models import Order, OrderItem, Product
 from .pagination import FlexiblePageNumberPagination
+from .permissions import IsOwnerAndPendingOrAdmin
+from .serializers import (OrderCreateSerializer, OrderDetailSerializer,
+                          OrderItemDetailSerializer, OrderItemListSerializer,
+                          OrderListSerializer, ProductSerializer)
 
 
 # Products: everyone can see, only staff can create/update/delete

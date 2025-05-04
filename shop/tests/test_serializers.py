@@ -1,12 +1,10 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
-from shop.models import Product, Order
-from shop.serializers import (
-    ProductSerializer,
-    OrderDetailSerializer,
-    OrderItemDetailSerializer,
-)
+
+from shop.models import Order, Product
+from shop.serializers import (OrderDetailSerializer, OrderItemDetailSerializer,
+                              ProductSerializer)
 
 User = get_user_model()
 

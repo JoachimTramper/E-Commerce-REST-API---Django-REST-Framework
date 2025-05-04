@@ -1,6 +1,7 @@
 # users/urls.py
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, CustomerProfileViewSet, AddressViewSet
+
+from .views import AddressViewSet, CustomerProfileViewSet, UserViewSet
 
 app_name = "users"  # Namespace for the users app
 
