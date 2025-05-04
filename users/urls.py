@@ -2,11 +2,11 @@
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, CustomerProfileViewSet, AddressViewSet
 
-app_name = 'users'  # Namespace for the users app
+app_name = "users"  # Namespace for the users app
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'profiles', CustomerProfileViewSet)
-router.register(r'addresses', AddressViewSet)
+router.register(r"users", UserViewSet)
+router.register(r"profiles", CustomerProfileViewSet)
+router.register(r"addresses", AddressViewSet)
 
 urlpatterns = router.urls

@@ -5,8 +5,9 @@ from django.utils import timezone
 from shop.models import Order, OrderItem, Product
 from users.models import CustomerProfile
 
+
 class Command(BaseCommand):
-    help = 'Seed the database with random orders and order items'
+    help = "Seed the database with random orders and order items"
 
     def handle(self, *args, **options):
         fake = Faker()
@@ -36,6 +37,8 @@ class Command(BaseCommand):
                 )
                 total_items += 1
 
-        self.stdout.write(self.style.SUCCESS(
-            f"✅ Seeded {total_orders} orders with {total_items} total items."
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"✅ Seeded {total_orders} orders with {total_items} total items."
+            )
+        )

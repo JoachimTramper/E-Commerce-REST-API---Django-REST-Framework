@@ -4,20 +4,15 @@ from shop.models import Product, Order, OrderItem
 
 User = get_user_model()
 
+
 class TestProductModel:
     @pytest.fixture(autouse=True)
     def setup_products(self, db):
         self.product_in_stock = Product.objects.create(
-            name="TestProduct1",
-            description="A product in stock",
-            price=10.00,
-            stock=5
+            name="TestProduct1", description="A product in stock", price=10.00, stock=5
         )
         self.product_out_of_stock = Product.objects.create(
-            name="TestProduct2",
-            description="Out of stock product",
-            price=5.00,
-            stock=0
+            name="TestProduct2", description="Out of stock product", price=5.00, stock=0
         )
 
     def test_str_returns_name(self):
@@ -33,16 +28,10 @@ class TestOrderModel:
     @pytest.fixture(autouse=True)
     def setup_order(self, db):
         self.user = User.objects.create_user(
-            username="user1",
-            email="user1@example.com",
-            password="pass"
+            username="user1", email="user1@example.com", password="pass"
         )
-        self.p1 = Product.objects.create(
-            name="A", description="", price=2.50, stock=10
-        )
-        self.p2 = Product.objects.create(
-            name="B", description="", price=1.75, stock=20
-        )
+        self.p1 = Product.objects.create(name="A", description="", price=2.50, stock=10)
+        self.p2 = Product.objects.create(name="B", description="", price=1.75, stock=20)
         # Clear existing orders to reset numbering
         Order.objects.all().delete()
 
@@ -67,9 +56,7 @@ class TestOrderItemModel:
     @pytest.fixture(autouse=True)
     def setup_item(self, db):
         self.user = User.objects.create_user(
-            username="user2",
-            email="u2@example.com",
-            password="pass"
+            username="user2", email="u2@example.com", password="pass"
         )
         self.product = Product.objects.create(
             name="C", description="", price=4.00, stock=8
@@ -77,10 +64,14 @@ class TestOrderItemModel:
         self.order = Order.objects.create(user=self.user)
 
     def test_item_subtotal_property(self):
-        item = OrderItem.objects.create(order=self.order, product=self.product, quantity=3)
+        item = OrderItem.objects.create(
+            order=self.order, product=self.product, quantity=3
+        )
         assert item.item_subtotal == pytest.approx(12.00)
 
     def test_str_includes_quantity_name_and_order_id(self):
-        item = OrderItem.objects.create(order=self.order, product=self.product, quantity=1)
+        item = OrderItem.objects.create(
+            order=self.order, product=self.product, quantity=1
+        )
         expected = f"1 x {self.product.name} (Order {self.order.order_id})"
         assert str(item) == expected
