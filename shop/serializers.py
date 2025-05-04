@@ -154,23 +154,42 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderItemListSerializer(serializers.ModelSerializer):
+    order = serializers.UUIDField(source="order.order_id", read_only=True)
+    product = serializers.PrimaryKeyRelatedField(read_only=True)
     product_name = serializers.CharField(source="product.name", read_only=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     item_subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ["id", "product_name", "quantity", "item_subtotal"]
+        fields = [
+            "id",
+            "order",
+            "product",
+            "product_name",
+            "quantity",
+            "price",
+            "item_subtotal",
+        ]
 
     def get_item_subtotal(self, obj):
-        return obj.product.price * obj.quantity
+        return obj.price * obj.quantity
 
 
 class OrderListSerializer(serializers.ModelSerializer):
+    items = OrderItemListSerializer(many=True, read_only=True)
     total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ["order_id", "order_number", "created_at", "status", "total_amount"]
+        fields = [
+            "order_id",
+            "order_number",
+            "created_at",
+            "status",
+            "items",
+            "total_amount",
+        ]
         read_only_fields = fields
 
     def get_total_amount(self, obj):

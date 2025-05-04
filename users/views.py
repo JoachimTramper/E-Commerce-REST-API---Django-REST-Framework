@@ -3,8 +3,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Address, CustomerProfile
-from .serializers import (AddressSerializer, CustomerProfileSerializer,
-                          UserSerializer)
+from .serializers import AddressSerializer, CustomerProfileSerializer, UserSerializer
 
 User = get_user_model()
 
