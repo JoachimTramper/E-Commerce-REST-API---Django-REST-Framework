@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from .filters import OrderFilter, OrderItemFilter, ProductFilter
 from .models import Order, OrderItem, Product
 from .pagination import FlexiblePageNumberPagination
-from .permissions import IsOwnerAndPendingOrAdmin
+from .permissions import IsOwnerPendingOrAdmin
 from .serializers import (
     OrderCreateSerializer,
     OrderDetailSerializer,
@@ -40,6 +40,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 # Orders: logged-in users can create/view their own orders, staff can view all orders
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all().order_by("-created_at")
+    permission_classes = [IsAuthenticated, IsOwnerPendingOrAdmin]
     pagination_class = FlexiblePageNumberPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = OrderFilter
@@ -48,6 +49,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if self.action == "destroy":
+            return qs
         if self.request.user.is_staff:
             return qs
         return qs.filter(user=self.request.user)
@@ -60,15 +63,15 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderListSerializer  # compact list‐serializer
         return OrderDetailSerializer  # detailed view‐serializer
 
-    def get_permissions(self):
-        # create/list/retrieve, open for logged-in users
-        if self.action in ("create", "list", "retrieve"):
-            return [IsAuthenticated()]
-        if self.action == "destroy":
-            # delete, only if the order is pending and the user is the owner or staff
-            return [IsOwnerAndPendingOrAdmin()]
-        # update/partial_update/destroy, staff only
-        return [IsAdminUser()]
+    # def get_permissions(self):
+    #     # create/list/retrieve, open for logged-in users
+    #     if self.action in ("create", "list", "retrieve"):
+    #         return [IsAuthenticated()]
+    #     if self.action == "destroy":
+    #         # first auth, then check if the user is the owner of the order
+    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdmin()]
+    #     # update/partial_update/destroy, staff only
+    #     return [IsAdminUser()]
 
     def perform_create(self, serializer):
         # link the order to the logged-in user
@@ -78,6 +81,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 # OrderItems: same as orders, but staff can see all items
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerPendingOrAdmin]
     pagination_class = FlexiblePageNumberPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = OrderItemFilter
@@ -86,6 +90,8 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if self.action == "destroy":
+            return qs
         if self.request.user.is_staff:
             return qs
         return qs.filter(order__user=self.request.user)
@@ -95,9 +101,17 @@ class OrderItemViewSet(viewsets.ModelViewSet):
             return OrderItemListSerializer  # compact list‐serializer
         return OrderItemDetailSerializer  # detailed view‐serializer
 
-    def get_permissions(self):
-        # list/retrieve, open for logged-in users
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated()]
-        # create/update/delete, staff only
-        return [IsAdminUser()]
+    # def get_permissions(self):
+    #     # list/retrieve, open for logged-in users
+    #     if self.action in ("list", "retrieve"):
+    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
+    #     # DELETE: owner (PENDING) or admin
+    #     if self.action == "destroy":
+    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
+
+    #     # create/update/partial_update: owner (PENDING) or admin
+    #     if self.action in ("create", "update", "partial_update"):
+    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
+
+    #     # fallback: only admin
+    #     return [IsAdminUser()]

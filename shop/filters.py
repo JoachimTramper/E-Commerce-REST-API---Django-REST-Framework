@@ -47,7 +47,7 @@ class OrderFilter(django_filters.FilterSet):
 
 class OrderItemFilter(django_filters.FilterSet):
     order = django_filters.UUIDFilter(field_name="order__order_id", lookup_expr="exact")
-    product = django_filters.NumberFilter(field_name="product__id", lookup_expr="exact")
+    product = django_filters.NumberFilter(field_name="product_id", lookup_expr="exact")
     quantity_min = django_filters.NumberFilter(field_name="quantity", lookup_expr="gte")
     quantity_max = django_filters.NumberFilter(field_name="quantity", lookup_expr="lte")
 
