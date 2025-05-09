@@ -8,34 +8,65 @@ from shop.models import Order, OrderItem, Product
 User = get_user_model()
 
 
-@pytest.fixture
-def api_client():
+@pytest.fixture(scope="function")
+def anon_client():
+    """
+    Always returns a new, unauthenticated API client instance.
+    """
     return APIClient()
 
 
-@pytest.fixture
-def user(db):
-    return User.objects.create_user("testuser", "test@example.com", "testpass")
-
-
-@pytest.fixture
-def auth_client(api_client, user):
+@pytest.fixture(scope="function")
+def auth_client(anon_client, user):
+    """
+    API client authenticated as a regular user.
+    """
     token = RefreshToken.for_user(user).access_token
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-    return api_client
+    anon_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    return anon_client
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def admin_client(auth_client, user):
+    """
+    API client authenticated as an admin user.
+    """
     user.is_staff = True
     user.save()
     return auth_client
 
 
-@pytest.fixture
-def orders(db, auth_client, django_user_model):
-    u1 = django_user_model.objects.create_user("alice", "a@", "p")
-    u2 = django_user_model.objects.create_user("bob", "b@", "p")
+@pytest.fixture(scope="function")
+def user(db):
+    """
+    Creates and returns a non-staff test user.
+    """
+    return User.objects.create_user(
+        username="testuser", email="test@example.com", password="testpass"
+    )
+
+
+@pytest.fixture(scope="function")
+def products(db):
+    """
+    Creates and returns a list of Product instances.
+    """
+    return Product.objects.bulk_create(
+        [
+            Product(name="Cheap", price=1.0, stock=10, description=""),
+            Product(name="Mid", price=5.0, stock=0, description=""),
+            Product(name="Exp", price=10.0, stock=5, description=""),
+        ]
+    )
+
+
+@pytest.fixture(scope="function")
+def orders(db, django_user_model):
+    """
+    Creates sample orders and order items without using any API client.
+    """
+    u1 = django_user_model.objects.create_user("alice", "alice@example.com", "pass")
+    u2 = django_user_model.objects.create_user("bob", "bob@example.com", "pass")
     p = Product.objects.create(name="P", price=10, stock=5)
 
     o1 = Order.objects.create(user=u1, status=Order.StatusChoices.PENDING)
@@ -50,10 +81,14 @@ def orders(db, auth_client, django_user_model):
     return {"u1": u1, "u2": u2, "o1": o1, "o2": o2, "o3": o3}
 
 
-@pytest.fixture
-def items(db, api_client, django_user_model):
-    user = django_user_model.objects.create_user("charlie", "c@x.com", "pass")
-
+@pytest.fixture(scope="function")
+def items(db, django_user_model):
+    """
+    Creates sample order items for a single user, without API client involvement.
+    """
+    user = django_user_model.objects.create_user(
+        "charlie", "charlie@example.com", "pass"
+    )
     p1 = Product.objects.create(name="P1", description="", price=5.00, stock=5)
     p2 = Product.objects.create(name="P2", description="", price=15.00, stock=5)
 
@@ -76,11 +111,10 @@ def items(db, api_client, django_user_model):
     }
 
 
-@pytest.fixture
-def item_client(api_client, items):
+@pytest.fixture(scope="function")
+def item_client(anon_client, items):
     """
-    - Client for testing order items.
-    - Authenticated as the user who created the items.
+    API client authenticated as the user who owns the sample items.
     """
-    api_client.force_authenticate(items["user"])
-    return api_client
+    anon_client.force_authenticate(user=items["user"])
+    return anon_client

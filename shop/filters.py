@@ -12,7 +12,7 @@ class ProductFilter(django_filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = []  # no default filters
+        fields = []
 
     def filter_in_stock(self, queryset, name, value):
         return queryset.filter(stock__gt=0) if value else queryset.filter(stock__lte=0)
@@ -48,6 +48,9 @@ class OrderFilter(django_filters.FilterSet):
 class OrderItemFilter(django_filters.FilterSet):
     order = django_filters.UUIDFilter(field_name="order__order_id", lookup_expr="exact")
     product = django_filters.NumberFilter(field_name="product_id", lookup_expr="exact")
+    order__status = django_filters.ChoiceFilter(
+        field_name="order__status", choices=Order.StatusChoices.choices
+    )
     quantity_min = django_filters.NumberFilter(field_name="quantity", lookup_expr="gte")
     quantity_max = django_filters.NumberFilter(field_name="quantity", lookup_expr="lte")
 

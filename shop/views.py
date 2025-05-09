@@ -1,7 +1,10 @@
+from django.db.models import DecimalField, ExpressionWrapper, F, Sum
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 
 from .filters import OrderFilter, OrderItemFilter, ProductFilter
 from .models import Order, OrderItem, Product
@@ -10,6 +13,7 @@ from .permissions import IsOwnerPendingOrAdmin
 from .serializers import (
     OrderCreateSerializer,
     OrderDetailSerializer,
+    OrderItemCreateUpdateSerializer,
     OrderItemDetailSerializer,
     OrderItemListSerializer,
     OrderListSerializer,
@@ -17,101 +21,136 @@ from .serializers import (
 )
 
 
-# Products: everyone can see, only staff can create/update/delete
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = FlexiblePageNumberPagination
 
-    # Filtering, searching & ordering
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ["name", "description"]
     ordering_fields = ["price", "name", "stock"]
 
     def get_permissions(self):
-        # list/retrieve → open for everyone
         if self.action in ("list", "retrieve"):
             return [AllowAny()]
-        # create/update/delete, staff only
-        return [IsAdminUser()]
+        return [IsAuthenticated(), IsAdminUser()]
 
 
-# Orders: logged-in users can create/view their own orders, staff can view all orders
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all().order_by("-created_at")
-    permission_classes = [IsAuthenticated, IsOwnerPendingOrAdmin]
-    pagination_class = FlexiblePageNumberPagination
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_class = OrderFilter
-    search_fields = ["status", "customer__username"]
-    ordering_fields = ["created", "total"]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if self.action == "destroy":
-            return qs
-        if self.request.user.is_staff:
-            return qs
-        return qs.filter(user=self.request.user)
-
-    def get_serializer_class(self):
-        # create/update/partial_update, uses writer-serializer
-        if self.action in ("create", "update", "partial_update"):
-            return OrderCreateSerializer
-        if self.action == "list":
-            return OrderListSerializer  # compact list‐serializer
-        return OrderDetailSerializer  # detailed view‐serializer
-
-    # def get_permissions(self):
-    #     # create/list/retrieve, open for logged-in users
-    #     if self.action in ("create", "list", "retrieve"):
-    #         return [IsAuthenticated()]
-    #     if self.action == "destroy":
-    #         # first auth, then check if the user is the owner of the order
-    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdmin()]
-    #     # update/partial_update/destroy, staff only
-    #     return [IsAdminUser()]
-
-    def perform_create(self, serializer):
-        # link the order to the logged-in user
-        serializer.save()
-
-
-# OrderItems: same as orders, but staff can see all items
 class OrderItemViewSet(viewsets.ModelViewSet):
-    queryset = OrderItem.objects.all()
+    """
+    - Admin users: full CRUD on all order items.
+    - Non-staff users:
+        • list/retrieve: only items from their own orders.
+        • create: only if they have at least one PENDING order.
+        • update/partial_update: only on items whose order status == PENDING.
+        • delete: only on items whose order status == PENDING.
+    """
+
+    queryset = OrderItem.objects.select_related("order", "product").annotate(
+        item_subtotal=ExpressionWrapper(
+            F("price") * F("quantity"),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+    )
     permission_classes = [IsAuthenticated, IsOwnerPendingOrAdmin]
     pagination_class = FlexiblePageNumberPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = OrderItemFilter
     search_fields = ["product__name"]
-    ordering_fields = ["quantity", "price"]
+    ordering_fields = ["quantity", "item_subtotal"]
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.action == "destroy":
-            return qs
+
+        # admin sees everything
         if self.request.user.is_staff:
-            return qs
-        return qs.filter(order__user=self.request.user)
+            return qs.order_by("-order__created_at", "id")
+
+        # user sees only their own items
+        qs = qs.filter(order__user=self.request.user)
+
+        # show all statuses for admin
+        qp = self.request.query_params
+        filter_params = {"product", "quantity_min", "quantity_max"}
+        if self.action == "list" and any(key in qp for key in filter_params):
+            return qs.order_by("-order__created_at", "id")
+
+        # or show only pending items
+        if self.action in ("list", "retrieve"):
+            qs = qs.filter(order__status=Order.StatusChoices.PENDING)
+
+        # final ordering
+        return qs.order_by("-order__created_at", "id")
 
     def get_serializer_class(self):
         if self.action == "list":
-            return OrderItemListSerializer  # compact list‐serializer
-        return OrderItemDetailSerializer  # detailed view‐serializer
+            return OrderItemListSerializer
+        if self.action in ("create", "update", "partial_update"):
+            return OrderItemCreateUpdateSerializer
+        return OrderItemDetailSerializer
 
-    # def get_permissions(self):
-    #     # list/retrieve, open for logged-in users
-    #     if self.action in ("list", "retrieve"):
-    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
-    #     # DELETE: owner (PENDING) or admin
-    #     if self.action == "destroy":
-    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
 
-    #     # create/update/partial_update: owner (PENDING) or admin
-    #     if self.action in ("create", "update", "partial_update"):
-    #         return [IsAuthenticated(), IsOwnerAndPendingOrAdminOnItem()]
+class OrderViewSet(viewsets.ModelViewSet):
+    """
+    - Admin users: full CRUD on all orders.
+    - Non-staff users:
+        • list/retrieve: only their own orders.
+        • create: may create orders for themselves.
+        • update/partial_update: only on their own orders when status == PENDING.
+        • delete: only on their own orders when status == PENDING.
+    """
 
-    #     # fallback: only admin
-    #     return [IsAdminUser()]
+    queryset = Order.objects.all().annotate(
+        total_amount=Sum(
+            F("items__quantity") * F("items__price"),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+    )
+    permission_classes = [IsAuthenticated, IsOwnerPendingOrAdmin]
+    pagination_class = FlexiblePageNumberPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = OrderFilter
+    search_fields = ["status", "user__username"]
+    ordering_fields = ["created_at", "total_amount"]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.is_staff:
+            return qs.order_by("-created_at")
+        return qs.filter(user=self.request.user).order_by("-created_at")
+
+    def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return OrderCreateSerializer
+        if self.action == "list":
+            return OrderListSerializer
+        return OrderDetailSerializer
+
+    def perform_create(self, serializer):
+        # serializer already has the user from the request
+        serializer.save()
+
+    def get_permissions(self):
+        # for destroy action, check if the user is authenticated
+        if self.action == "destroy":
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        # check if user is authenticated
+        if not request.user or not request.user.is_authenticated:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        # get the order
+        order = get_object_or_404(Order, pk=kwargs["pk"])
+        # admin always allowed
+        if request.user.is_staff:
+            order.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        # only owner and pending orders can be deleted
+        if order.user != request.user or order.status != Order.StatusChoices.PENDING:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        # delete the order
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

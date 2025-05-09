@@ -59,6 +59,51 @@ class OrderItemDetailSerializer(serializers.ModelSerializer):
         return value
 
 
+class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    quantity = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
+    order = serializers.UUIDField(source="order.order_id", read_only=True)
+    item_subtotal = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ["id", "order", "product", "quantity", "item_subtotal"]
+
+    def get_item_subtotal(self, obj):
+        return obj.price * obj.quantity
+
+    def validate(self, data):
+        qty = data.get("quantity")
+        product = data.get("product")
+        if qty is not None and qty <= 0:
+            raise serializers.ValidationError(
+                {"quantity": "Quantity must be at least 1."}
+            )
+
+        # Check if the product is in stock
+        if qty is not None and product is not None and qty > product.stock:
+            raise serializers.ValidationError(
+                {
+                    "quantity": f"You ordered {qty}, but there are only {product.stock} in stock."
+                }
+            )
+
+        return data
+
+    def create(self, validated_data):
+        # Check if the user has a pending order
+        pending = Order.objects.get(
+            user=self.context["request"].user, status=Order.StatusChoices.PENDING
+        )
+        return OrderItem.objects.create(
+            order=pending,
+            product=validated_data["product"],
+            quantity=validated_data["quantity"],
+            price=validated_data["product"].price,
+        )
+
+
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemDetailSerializer(many=True)
 
@@ -73,13 +118,15 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items_data = validated_data.pop("items")
         user = self.context["request"].user
-        order = Order.objects.create(user=user, **validated_data)
-
-        for item in items_data:
-            product = item["product"]
-            quantity = item["quantity"]
-            OrderItem.objects.create(order=order, product=product, quantity=quantity)
-
+        # Transaction atomic block to ensure all-or-nothing
+        with transaction.atomic():
+            order = Order.objects.create(user=user, **validated_data)
+            for item in items_data:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item["product"],
+                    quantity=item["quantity"],
+                )
         return order
 
     def update(self, instance, validated_data):
@@ -106,7 +153,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    # user komt automatisch uit request.user
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     items = OrderItemDetailSerializer(many=True)
     status = serializers.ChoiceField(

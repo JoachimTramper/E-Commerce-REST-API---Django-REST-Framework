@@ -15,7 +15,6 @@ User = get_user_model()
 class TestProductSerializer:
     @pytest.fixture(autouse=True)
     def setup_products(self, db):
-        # Create an existing product for update tests
         self.existing = Product.objects.create(
             name="Existing", description="Desc", price=2.00, stock=10
         )

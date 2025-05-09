@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Max
+from django.db.models import DecimalField, F, Max, Sum
 
 User = get_user_model()
 
@@ -44,6 +44,7 @@ class Order(models.Model):
     products = models.ManyToManyField(
         Product, through="OrderItem", related_name="orders"
     )
+    _total_amount = None
 
     class Meta:
         ordering = ["-created_at"]
@@ -52,7 +53,7 @@ class Order(models.Model):
         return f"Order {self.order_number} by {self.user.username}"
 
     def save(self, *args, **kwargs):
-        # vul order_number als het nog niet bestaat
+        # set order_number to the next available number if not set
         if self.order_number is None:
             last = (
                 Order.objects.aggregate(Max("order_number"))["order_number__max"] or 0
@@ -62,7 +63,23 @@ class Order(models.Model):
 
     @property
     def total_amount(self):
-        return sum(item.item_subtotal for item in self.items.all())
+        if self._total_amount is not None:
+            return self._total_amount
+
+        return (
+            self.items.aggregate(
+                total=Sum(
+                    F("quantity") * F("price"),
+                    output_field=DecimalField(max_digits=12, decimal_places=2),
+                )
+            )["total"]
+            or 0
+        )
+
+    @total_amount.setter
+    def total_amount(self, value):
+        # set the total amount directly
+        self._total_amount = value
 
 
 class OrderItem(models.Model):
@@ -74,6 +91,7 @@ class OrderItem(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
     )
+    _item_subtotal = None
 
     def save(self, *args, **kwargs):
         # set price to product price if not set
@@ -86,7 +104,16 @@ class OrderItem(models.Model):
 
     @property
     def item_subtotal(self):
-        return self.product.price * self.quantity
+        # if item_subtotal is already set, return it
+        if self._item_subtotal is not None:
+            return self._item_subtotal
+        # fallback: calculate subtotal from price and quantity
+        return self.price * self.quantity
+
+    @item_subtotal.setter
+    def item_subtotal(self, value):
+        # set the item subtotal directly
+        self._item_subtotal = value
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name} (Order {self.order.order_id})"
