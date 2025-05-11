@@ -75,7 +75,7 @@ def orders(db, django_user_model):
     o2 = Order.objects.create(user=u2, status=Order.StatusChoices.CONFIRMED)
     OrderItem.objects.create(order=o2, product=p, quantity=1, price=10)
 
-    o3 = Order.objects.create(user=u1, status=Order.StatusChoices.PENDING)
+    o3 = Order.objects.create(user=u1, status=Order.StatusChoices.CONFIRMED)
     OrderItem.objects.create(order=o3, product=p, quantity=1, price=5)
 
     return {"u1": u1, "u2": u2, "o1": o1, "o2": o2, "o3": o3}
@@ -118,3 +118,51 @@ def item_client(anon_client, items):
     """
     anon_client.force_authenticate(user=items["user"])
     return anon_client
+
+
+@pytest.fixture
+def cart_with_one_item(db, products, no_order_user):
+    """
+    Creates a user who has exactly one PENDING item in their cart.
+    Orders['u1'] is a User instance and products[0] is a Product.
+    """
+    user = no_order_user
+    order = Order.objects.create(user=user, status=Order.StatusChoices.PENDING)
+    OrderItem.objects.create(
+        order=order,
+        product=products[0],
+        quantity=1,
+        price=products[0].price,
+    )
+    return order
+
+
+@pytest.fixture
+def cart_with_items(db, products, no_order_user):
+    """
+    Creates a user with 2 items in thier pending cart.
+    """
+    user = no_order_user
+    order = Order.objects.create(user=user, status=Order.StatusChoices.PENDING)
+    # twee items
+    OrderItem.objects.create(
+        order=order,
+        product=products[0],
+        quantity=2,
+        price=products[0].price,
+    )
+    OrderItem.objects.create(
+        order=order,
+        product=products[1],
+        quantity=3,
+        price=products[1].price,
+    )
+    return order
+
+
+@pytest.fixture
+def no_order_user(django_user_model):
+    """
+    Creates a user who has no orders.
+    """
+    return django_user_model.objects.create_user("carol", "carol@example.com", "pass")

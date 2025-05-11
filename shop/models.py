@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import DecimalField, F, Max, Sum
+from django.db.models import DecimalField, F, Max, Q, Sum, UniqueConstraint
 
 User = get_user_model()
 
@@ -48,6 +48,13 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            UniqueConstraint(
+                fields=["user"],
+                condition=Q(status="Pending"),
+                name="unique_pending_order_per_user",
+            )
+        ]
 
     def __str__(self):
         return f"Order {self.order_number} by {self.user.username}"

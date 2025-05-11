@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "users",
     "django_seed",
     "django_extensions",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -144,6 +145,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -154,4 +156,23 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ECOMMERCE-API",
+    "DESCRIPTION": "REST API for managing products, orders, order items, user accounts and authentication ",
+    "VERSION": "1.0.0",
+    "CONTACT": {
+        "name": "Joachim Tramper",
+        "email": "joachimtramper@gmail.com",
+        "url": "https://github.com/joachimtramper",
+    },
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api",
+    "SCHEMA_PATH_PREFIX_TRIM": True,
+    "SERVERS": [
+        {"url": "/api", "description": "API base path"},
+    ],
+    "tagsSorter": "alpha",
+    "operationsSorter": "alpha",
 }

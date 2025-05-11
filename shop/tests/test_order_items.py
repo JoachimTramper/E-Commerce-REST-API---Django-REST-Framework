@@ -22,7 +22,6 @@ class TestOrderItemFiltering:
         resp = item_client.get(f"{ITEM_LIST}?product={product_id}")
         assert resp.status_code == 200
         quantities = {it["quantity"] for it in resp.data["results"]}
-        # 2 items, quantities 1 and 2
         assert quantities == {1, 2}
 
     @pytest.mark.parametrize(
@@ -44,7 +43,6 @@ class TestOrderItemCRUD:
     def test_list_only_my_items(self, item_client, items):
         resp = item_client.get(ITEM_LIST)
         assert resp.status_code == status.HTTP_200_OK
-        # item_client.user only has i1 and i2
         ids = {i["id"] for i in resp.data["results"]}
         assert ids == {items["i1"].id, items["i2"].id}
 

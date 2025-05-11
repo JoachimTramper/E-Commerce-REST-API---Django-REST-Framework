@@ -240,3 +240,21 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     def get_total_amount(self, obj):
         return obj.total_amount
+
+
+class CartSerializer(serializers.ModelSerializer):
+    items = OrderItemDetailSerializer(many=True, read_only=True)
+    total_amount = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "order_id",
+            "created_at",
+            "items",
+            "total_amount",
+        ]
+        read_only_fields = fields
+
+    def get_total_amount(self, obj):
+        return obj.total_amount

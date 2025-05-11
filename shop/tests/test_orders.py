@@ -5,6 +5,7 @@ from rest_framework import status
 from shop.models import Order
 
 ORDER_LIST = "/api/shop/orders/"
+CART_LIST = "/api/shop/cart/"
 
 
 def ORDER_DETAIL(o):
@@ -66,36 +67,6 @@ class TestOrderCRUD:
         resp = admin_client.get(ORDER_DETAIL(orders["o2"]))
         assert resp.status_code == status.HTTP_200_OK
 
-    def test_create_requires_auth(self, anon_client, products):
-        payload = {"items": [{"product": products[0].pk, "quantity": 1}]}
-        resp = anon_client.post(ORDER_LIST, payload, format="json")
-        assert resp.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_create_order_success(self, auth_client, products, orders):
-        auth_client.force_authenticate(orders["u1"])
-        payload = {
-            "items": [
-                {
-                    "product_id": products[0].pk,
-                    "quantity": 2,
-                    "price": str(products[0].price),
-                },
-                {
-                    "product_id": products[2].pk,
-                    "quantity": 1,
-                    "price": str(products[2].price),
-                },
-            ]
-        }
-        resp = auth_client.post(ORDER_LIST, payload, format="json")
-        assert resp.status_code == status.HTTP_201_CREATED, resp.data
-        subtotals = [float(i["item_subtotal"]) for i in resp.data["items"]]
-        expected = [
-            2 * float(products[0].price),
-            1 * float(products[2].price),
-        ]
-        assert subtotals == expected
-
     def test_update_my_pending_order(self, anon_client, orders):
         anon_client.force_authenticate(orders["u1"])
         url = ORDER_DETAIL(orders["o1"])
@@ -147,24 +118,29 @@ class TestOrderDelete:
 
 
 @pytest.mark.django_db
+class TestOrderCheckout:
+    def test_checkout_moves_cart_and_hides_it(self, auth_client, cart_with_items):
+        # Use the user who owns a PENDING-cart
+        client, cart = auth_client, cart_with_items
+        client.force_authenticate(cart.user)
+
+        # Perform checkout
+        resp = client.post(f"{ORDER_LIST}{cart.order_id}/checkout/")
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["status"] == Order.StatusChoices.CONFIRMED
+
+        # Now /orders/ should include this order
+        resp2 = client.get(ORDER_LIST)
+        ids = {o["order_id"] for o in resp2.data["results"]}
+        assert str(cart.order_id) in ids
+
+        # And /cart/ must now return 404 (no more PENDING)
+        resp3 = client.get(CART_LIST)
+        assert resp3.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
 class TestOrderEdgeCases:
-    def test_create_invalid_payload_returns_400(self, auth_client, products):
-        resp = auth_client.post(ORDER_LIST, {}, format="json")
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-        payload = {
-            "items": [
-                {
-                    "product_id": products[0].pk,
-                    "quantity": 9999,
-                    "price": str(products[0].price),
-                }
-            ]
-        }
-        resp = auth_client.post(ORDER_LIST, payload, format="json")
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-        assert "You ordered" in resp.data["items"][0]["quantity"][0]
-
     def test_admin_can_update_any_order(self, admin_client, orders):
         for o in (orders["o1"], orders["o2"], orders["o3"]):
             resp = admin_client.patch(

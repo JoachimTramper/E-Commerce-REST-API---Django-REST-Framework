@@ -1,6 +1,6 @@
 @base_url = http://localhost:8000/api
-@ACCESS = 
-@REFRESH = 
+@ACCESS =
+@REFRESH =
 
 ### Login (obtain JWT)
 
@@ -8,13 +8,13 @@ POST {{base_url}}/token/
 Content-Type: application/json
 
 {
-  "username": "joachimtramper@gmail.com", 
-  "password": ""
+  "email": "mirandadennis@example.com",
+  "password": "yjffdaMUWuCl"
 }
 
-> {% client.global.set("ACCESS", response.body.access) %}
-> {% client.global.set("REFRESH", response.body.refresh) %}
-# > {% client.log("REFRESH: " + response.body.refresh) %}
+# > {% client.global.set("ACCESS", response.body.access) %}
+# > {% client.global.set("REFRESH", response.body.refresh) %}
+# # > {% client.log("REFRESH: " + response.body.refresh) %}
 
 ### Refresh token
 POST {{base_url}}/token/refresh/
@@ -45,7 +45,7 @@ Authorization: Bearer {{ACCESS}}
   "stock": 100
 }
 
-### Update a product 
+### Update a product
 PUT {{base_url}}/shop/products/1/
 Content-Type: application/json
 Authorization: Bearer {{ACCESS}}

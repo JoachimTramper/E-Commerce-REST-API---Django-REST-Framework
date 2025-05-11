@@ -37,7 +37,9 @@ class TestOrderModel:
         Order.objects.all().delete()
 
     def test_order_number_auto_increment(self):
-        o1 = Order.objects.create(user=self.user)
+        o1 = Order.objects.create(user=self.user)  # status = Pending
+        o1.status = Order.StatusChoices.CONFIRMED  # status = Confirmed
+        o1.save()
         o2 = Order.objects.create(user=self.user)
         assert o2.order_number == o1.order_number + 1
 
