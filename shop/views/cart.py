@@ -1,6 +1,6 @@
 from django.db.models import DecimalField, F, Sum
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -41,19 +41,71 @@ class CartViewSet(viewsets.ViewSet):
         return Response(CartSerializer(cart).data)
 
 
-@extend_schema(
-    request=OrderItemCreateUpdateSerializer,
-    responses={
-        200: OrderItemListSerializer(many=True),
-        201: CartSerializer,
-        400: OpenApiResponse(description="Validation error"),
-        404: OpenApiResponse(description="Not found"),
-    },
-    examples=CART_ITEM_EXAMPLES,
+# @extend_schema(
+#     request=OrderItemCreateUpdateSerializer,
+#     responses={
+#         200: OrderItemListSerializer(many=True),
+#         201: CartSerializer,
+#         400: OpenApiResponse(description="Validation error"),
+#         404: OpenApiResponse(description="Not found"),
+#     },
+#     examples=CART_ITEM_EXAMPLES,
+#     methods={
+#         'list': extend_schema(operation_id='cartItemsList'),
+#         'retrieve': extend_schema(operation_id='cartItemsRetrieve'),
+#         'create': extend_schema(operation_id='cartItemCreate'),
+#     }
+# )
+# @extend_schema_view(
+#     list=extend_schema(
+#         operation_id="cartItemsList",
+#         responses={200: OrderItemListSerializer(many=True)},
+#     ),
+#     retrieve=extend_schema(
+#         operation_id="cartItemsRetrieve",
+#         responses={200: OrderItemDetailSerializer()},
+#     ),
+#     create=extend_schema(
+#         operation_id="cartItemCreate",
+#         request=OrderItemCreateUpdateSerializer,
+#         responses={201: CartSerializer()},
+#         examples=CART_ITEM_EXAMPLES,
+#     ),
+# )
+@extend_schema_view(
+    list=extend_schema(
+        operation_id="cartItemsList",
+        responses={200: OrderItemListSerializer(many=True)},
+    ),
+    retrieve=extend_schema(
+        operation_id="cartItemsRetrieve",
+        responses={200: OrderItemDetailSerializer()},
+    ),
+    create=extend_schema(
+        operation_id="cartItemCreate",
+        request=OrderItemCreateUpdateSerializer,
+        responses={201: CartSerializer()},
+        examples=CART_ITEM_EXAMPLES,
+    ),
+    update=extend_schema(
+        operation_id="cartItemUpdate",
+        request=OrderItemCreateUpdateSerializer,
+        responses={200: OrderItemDetailSerializer()},
+    ),
+    partial_update=extend_schema(
+        operation_id="cartItemPartialUpdate",
+        request=OrderItemCreateUpdateSerializer,
+        responses={200: OrderItemDetailSerializer()},
+    ),
+    destroy=extend_schema(
+        operation_id="cartItemDelete",
+        responses={204: OpenApiResponse(description="Cart item deleted")},
+    ),
 )
 class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
+    queryset = OrderItem.objects.none()
 
     def get_queryset(self):
         # Only show items from the current user's pending cart

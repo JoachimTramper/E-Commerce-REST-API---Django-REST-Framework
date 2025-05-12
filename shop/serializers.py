@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
@@ -38,7 +40,7 @@ class OrderItemDetailSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ["id", "order", "product", "product_id", "quantity", "item_subtotal"]
 
-    def get_item_subtotal(self, obj):
+    def get_item_subtotal(self, obj) -> Decimal:
         return obj.product.price * obj.quantity
 
     def validate(self, data):
@@ -70,7 +72,7 @@ class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ["id", "order", "product", "quantity", "item_subtotal"]
 
-    def get_item_subtotal(self, obj):
+    def get_item_subtotal(self, obj) -> Decimal:
         return obj.price * obj.quantity
 
     def validate(self, data):
@@ -188,7 +190,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-    def get_total_amount(self, obj):
+    def get_total_amount(self, obj) -> Decimal:
         return obj.total_amount
 
     def create(self, validated_data):
@@ -218,7 +220,7 @@ class OrderItemListSerializer(serializers.ModelSerializer):
             "item_subtotal",
         ]
 
-    def get_item_subtotal(self, obj):
+    def get_item_subtotal(self, obj) -> Decimal:
         return obj.price * obj.quantity
 
 
@@ -256,5 +258,5 @@ class CartSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_total_amount(self, obj):
+    def get_total_amount(self, obj) -> Decimal:
         return obj.total_amount
