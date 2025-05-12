@@ -1,6 +1,6 @@
 window.onload = function() {
   const ui = SwaggerUIBundle({
-    url: "../schema.yml",
+    url: "/schema.yml",
     dom_id: '#swagger-ui',
     presets: [
       SwaggerUIBundle.presets.apis,
