@@ -66,7 +66,7 @@ Use these test credentials to authenticate in Swagger-UI or via the client SDK:
 
 | Username                                    | Password     |
 | ------------------------------------------- | ------------ |
-| [demo@example.com](mailto:demo@example.com) | DemoPass123! |
+| [mirandadennis@example.com](mailto:demo@example.com) | yjffdaMUWuCl |
 
 Obtain a JWT token by POSTing to `/api/token/`:
 
