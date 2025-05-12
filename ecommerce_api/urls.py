@@ -1,9 +1,12 @@
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
+    # Redirect root to Swagger UI
+    path("", RedirectView.as_view(url="/api/docs/", permanent=False)),
     # Django admin
     path("admin/", admin.site.urls),
     # JWT Authentication endpoints
