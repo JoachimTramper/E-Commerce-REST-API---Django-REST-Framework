@@ -47,6 +47,22 @@ SECRET_KEY = "django-insecure-^lrev4pyfy=riz6py%f2neqc$x(g8-6#u#^l=46hl3els(0y*a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
+# Only in production (DEBUG=False) force HTTPS and cookies-secure
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+# HSTS only in production (DEBUG=False)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000  # 1 jaar
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    # During development/tests HSTS is disabled
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
