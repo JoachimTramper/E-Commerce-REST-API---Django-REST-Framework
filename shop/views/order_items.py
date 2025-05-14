@@ -4,6 +4,11 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import (
+    AnonRateThrottle,
+    ScopedRateThrottle,
+    UserRateThrottle,
+)
 
 from shop.docs.examples import ORDER_ITEM_EXAMPLES
 from shop.filters import OrderItemFilter
@@ -53,6 +58,12 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     filterset_class = OrderItemFilter
     search_fields = ["product__name"]
     ordering_fields = ["quantity", "item_subtotal"]
+    throttle_classes = [
+        UserRateThrottle,
+        AnonRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     def get_queryset(self):
         qs = super().get_queryset()

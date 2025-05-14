@@ -8,13 +8,23 @@ POST {{base_url}}/token/
 Content-Type: application/json
 
 {
-  "email": "mirandadennis@example.com",
-  "password": "yjffdaMUWuCl"
+  "email": "joachimtramper@gmail.com",
+  "password": "hello123456"
 }
 
 # > {% client.global.set("ACCESS", response.body.access) %}
 # > {% client.global.set("REFRESH", response.body.refresh) %}
 # # > {% client.log("REFRESH: " + response.body.refresh) %}
+
+###
+POST https://web-production-7c555.up.railway.app/api/token/
+Content-Type: application/json
+
+{
+  "email":"vhall@example.org",
+  "password":"kIJ0XSRwSFXv"
+  }
+
 
 ### Refresh token
 POST {{base_url}}/token/refresh/

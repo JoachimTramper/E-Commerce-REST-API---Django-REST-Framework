@@ -1,1 +1,4 @@
 * text=auto eol=lf
+
+# Vendored SDK excluded from linguist
+clients/ts-axios/** linguist-vendored=true

@@ -7,6 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import (
+    AnonRateThrottle,
+    ScopedRateThrottle,
+    UserRateThrottle,
+)
 
 from shop.docs.examples import ORDER_EXAMPLES
 from shop.filters import OrderFilter
@@ -57,6 +62,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     search_fields = ["status", "user__username"]
     ordering_fields = ["created_at", "total_amount"]
     lookup_field = "pk"
+    throttle_classes = [
+        UserRateThrottle,
+        AnonRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     def get_queryset(self):
         qs = super().get_queryset()

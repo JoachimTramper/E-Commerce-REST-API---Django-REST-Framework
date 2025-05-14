@@ -4,6 +4,11 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import (
+    AnonRateThrottle,
+    ScopedRateThrottle,
+    UserRateThrottle,
+)
 
 from shop.docs.examples import CART_EXAMPLES, CART_ITEM_EXAMPLES
 from shop.models import Order, OrderItem
@@ -26,6 +31,12 @@ from shop.serializers import (
 )
 class CartViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [
+        UserRateThrottle,
+        AnonRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     def list(self, request):
         cart = get_object_or_404(
@@ -41,37 +52,6 @@ class CartViewSet(viewsets.ViewSet):
         return Response(CartSerializer(cart).data)
 
 
-# @extend_schema(
-#     request=OrderItemCreateUpdateSerializer,
-#     responses={
-#         200: OrderItemListSerializer(many=True),
-#         201: CartSerializer,
-#         400: OpenApiResponse(description="Validation error"),
-#         404: OpenApiResponse(description="Not found"),
-#     },
-#     examples=CART_ITEM_EXAMPLES,
-#     methods={
-#         'list': extend_schema(operation_id='cartItemsList'),
-#         'retrieve': extend_schema(operation_id='cartItemsRetrieve'),
-#         'create': extend_schema(operation_id='cartItemCreate'),
-#     }
-# )
-# @extend_schema_view(
-#     list=extend_schema(
-#         operation_id="cartItemsList",
-#         responses={200: OrderItemListSerializer(many=True)},
-#     ),
-#     retrieve=extend_schema(
-#         operation_id="cartItemsRetrieve",
-#         responses={200: OrderItemDetailSerializer()},
-#     ),
-#     create=extend_schema(
-#         operation_id="cartItemCreate",
-#         request=OrderItemCreateUpdateSerializer,
-#         responses={201: CartSerializer()},
-#         examples=CART_ITEM_EXAMPLES,
-#     ),
-# )
 @extend_schema_view(
     list=extend_schema(
         operation_id="cartItemsList",
@@ -106,6 +86,12 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
     queryset = OrderItem.objects.none()
+    throttle_classes = [
+        UserRateThrottle,
+        AnonRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     def get_queryset(self):
         # Only show items from the current user's pending cart
@@ -114,6 +100,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
         )
 
     def get_serializer_class(self):
+        if self.action == "list":
+            return OrderItemListSerializer
         if self.action in ("create", "update", "partial_update"):
             return OrderItemCreateUpdateSerializer
         return OrderItemDetailSerializer
