@@ -11,10 +11,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DEBUG", "True") == "True"
+
+# Detect test-runs
+RUNNING_TESTS = any("pytest" in arg or "test" in arg for arg in sys.argv)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,24 +51,6 @@ else:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-^lrev4pyfy=riz6py%f2neqc$x(g8-6#u#^l=46hl3els(0y*a"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True") == "True"
-
-# Only in production (DEBUG=False) force HTTPS and cookies-secure
-SECURE_SSL_REDIRECT = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-
-# HSTS only in production (DEBUG=False)
-if not DEBUG:
-    SECURE_HSTS_SECONDS = 31536000  # 1 jaar
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-else:
-    # During development/tests HSTS is disabled
-    SECURE_HSTS_SECONDS = 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -248,19 +237,19 @@ CACHES = {
     }
 }
 
-# All traffic via HTTPS
-SECURE_SSL_REDIRECT = True
+# Enforce HTTPS and secure cookies only in production (DEBUG=False and not during pytest)
+if not DEBUG and not RUNNING_TESTS:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_PRELOAD = True
+else:
+    # Disable HTTPS redirects and secure cookies in development and tests
+    SECURE_SSL_REDIRECT = SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_PRELOAD = False
 
-# HSTS (HTTP Strict Transport Security)
-SECURE_HSTS_SECONDS = 31536000  # 1 jaar
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
-# Cookies only via HTTPS
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-# Extra headers for XSS/frame protection
+# Always enable XSS protection header and clickjacking prevention
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 

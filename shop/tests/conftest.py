@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from shop.models import Order, OrderItem, Product
@@ -166,3 +167,14 @@ def no_order_user(django_user_model):
     Creates a user who has no orders.
     """
     return django_user_model.objects.create_user("carol", "carol@example.com", "pass")
+
+
+@pytest.fixture(autouse=True)
+def disable_all_throttling(monkeypatch):
+    """
+    Zorgt dat álle DRF-throttle-classes hun allow_request() altijd True teruggeven,
+    ongeacht view-instellingen of scope.
+    """
+    monkeypatch.setattr(
+        SimpleRateThrottle, "allow_request", lambda self, request, view: True
+    )
