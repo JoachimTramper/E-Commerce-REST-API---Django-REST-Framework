@@ -48,6 +48,9 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
         run: python manage.py migrate --noinput
 
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
       - name: Lint with flake8
         run: flake8 .
 

@@ -249,6 +249,12 @@ else:
     SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_PRELOAD = False
 
+# Swap naar in-memory cache tijdens pytest
+if RUNNING_TESTS:
+    CACHES["default"] = {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+
 # Always enable XSS protection header and clickjacking prevention
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"

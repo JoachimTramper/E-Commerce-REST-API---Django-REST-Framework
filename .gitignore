@@ -11,6 +11,9 @@ env/
 db.sqlite3
 media/
 
+# Collected static assets
+staticfiles/
+
 # Environment file for secrets
 .env
 
