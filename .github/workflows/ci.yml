@@ -32,7 +32,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Install dependencies
         run: |
@@ -56,6 +56,9 @@ jobs:
 
       - name: Validate OpenAPI schema
         run: python manage.py spectacular --validate
+
+      - name: Run static type checks
+        run: mypy shop ecommerce_api
 
       - name: Run tests with coverage
         env:
