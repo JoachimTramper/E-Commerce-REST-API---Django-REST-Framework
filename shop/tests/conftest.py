@@ -172,8 +172,8 @@ def no_order_user(django_user_model):
 @pytest.fixture(autouse=True)
 def disable_all_throttling(monkeypatch):
     """
-    Zorgt dat álle DRF-throttle-classes hun allow_request() altijd True teruggeven,
-    ongeacht view-instellingen of scope.
+    Ensure that all DRF throttle classes always allow requests,
+    so no test ever returns 429 Too Many Requests.
     """
     monkeypatch.setattr(
         SimpleRateThrottle, "allow_request", lambda self, request, view: True
