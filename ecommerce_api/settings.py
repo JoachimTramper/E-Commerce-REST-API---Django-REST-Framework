@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import logging
 import os
 import sys
 from datetime import timedelta
@@ -230,31 +229,18 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 WHITENOISE_USE_FINDERS = True
 
-# Resolve mogelijke env-var-namen
-REDIS_LOCATION = (
-    os.getenv("REDIS_URL")
-    or os.getenv("REDIS_TLS_URL")
-    or os.getenv("RAILWAY_REDIS_URL")
-)
-
-logger = logging.getLogger(__name__)
-
-if RUNNING_TESTS or DEBUG:
+if DEBUG or RUNNING_TESTS:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
-    logger.error("[CACHE] Using LocalMemoryCache (tests or DEBUG)")
 else:
-    # PRODUCTIE
-    if not REDIS_LOCATION:
-        raise RuntimeError("REDIS_URL not set in production!")
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": REDIS_LOCATION,
-            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+            "LOCATION": os.environ["REDIS_URL"],
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
         }
     }
-    logger.error(f"[CACHE] Using Redis at: {REDIS_LOCATION!r}")
-
 
 # Enforce HTTPS and secure cookies only in production (DEBUG=False and not during pytest)
 if not DEBUG and not RUNNING_TESTS:
