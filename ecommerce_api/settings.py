@@ -14,6 +14,7 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
+from typing import Any, Dict
 
 import dj_database_url
 
@@ -228,6 +229,8 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOW_ALL_ORIGINS = True
 
 WHITENOISE_USE_FINDERS = True
+
+CACHES: Dict[str, Any]
 
 if DEBUG or RUNNING_TESTS:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
