@@ -230,18 +230,30 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 WHITENOISE_USE_FINDERS = True
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}
+# Resolve mogelijke env-var-namen
+REDIS_LOCATION = (
+    os.getenv("REDIS_URL")
+    or os.getenv("REDIS_TLS_URL")
+    or os.getenv("RAILWAY_REDIS_URL")
+)
 
 logger = logging.getLogger(__name__)
-logger.error(f"[CACHE] Using Redis at: {CACHES['default']['LOCATION']!r}")
+
+if RUNNING_TESTS or DEBUG:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+    logger.error("[CACHE] Using LocalMemoryCache (tests or DEBUG)")
+else:
+    # PRODUCTIE
+    if not REDIS_LOCATION:
+        raise RuntimeError("REDIS_URL not set in production!")
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_LOCATION,
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        }
+    }
+    logger.error(f"[CACHE] Using Redis at: {REDIS_LOCATION!r}")
 
 
 # Enforce HTTPS and secure cookies only in production (DEBUG=False and not during pytest)
