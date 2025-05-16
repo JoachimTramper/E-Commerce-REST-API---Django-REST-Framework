@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import logging
 import os
 import sys
 from datetime import timedelta
@@ -238,6 +239,10 @@ CACHES = {
         },
     }
 }
+
+logger = logging.getLogger(__name__)
+logger.error(f"[CACHE] Using Redis at: {CACHES['default']['LOCATION']!r}")
+
 
 # Enforce HTTPS and secure cookies only in production (DEBUG=False and not during pytest)
 if not DEBUG and not RUNNING_TESTS:
