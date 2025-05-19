@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import (
     AnonRateThrottle,
@@ -82,18 +81,14 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderCreateSerializer
         return OrderDetailSerializer
 
-    @action(detail=True, methods=["post"], url_path="checkout")
-    def checkout(self, request, pk=None):
-        order = self.get_object()
-        order.status = Order.StatusChoices.CONFIRMED
-        order.save()
-        serializer = self.get_serializer(order)
-        return Response(serializer.data)
-
     def get_permissions(self):
-        # for destroy action, check if the user is authenticated
+        # only admin users can create orders
+        if self.action == "create":
+            return [IsAdminUser()]
+        # destroy only for authenticated users or admin
         if self.action == "destroy":
-            return [AllowAny()]
+            return [IsAuthenticated(), IsOwnerPendingOrAdmin()]
+        # list/retrieve/update/partial_update for authenticated users
         return super().get_permissions()
 
     def destroy(self, request, *args, **kwargs):

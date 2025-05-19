@@ -2,6 +2,7 @@ from django.db.models import DecimalField, F, Sum
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import (
@@ -20,14 +21,22 @@ from shop.serializers import (
 )
 
 
-@extend_schema(
-    request=None,
-    responses={
-        200: CartSerializer,
-        404: OpenApiResponse(description="No pending cart"),
-    },
-    description="Retrieve the current user's pending cart",
-    examples=CART_EXAMPLES,
+@extend_schema_view(
+    list=extend_schema(
+        request=None,
+        responses={
+            200: CartSerializer,
+            404: OpenApiResponse(description="No pending cart"),
+        },
+        description="Retrieve the current user's pending cart",
+        examples=CART_EXAMPLES,
+    ),
+    checkout=extend_schema(
+        operation_id="cartCheckout",
+        request=None,
+        responses={204: OpenApiResponse(description="Cart checked out")},
+        description="Set the pending cart to CONFIRMED; subsequent GET /cart/ returns 404",
+    ),
 )
 class CartViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -50,6 +59,18 @@ class CartViewSet(viewsets.ViewSet):
             status=Order.StatusChoices.PENDING,
         )
         return Response(CartSerializer(cart).data)
+
+    @action(detail=False, methods=["post"], url_path="checkout")
+    def checkout(self, request):
+        """
+        Perform checkout: set the cart status from PENDING to CONFIRMED.
+        """
+        cart = get_object_or_404(
+            Order, user=request.user, status=Order.StatusChoices.PENDING
+        )
+        cart.status = Order.StatusChoices.CONFIRMED
+        cart.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema_view(

@@ -15,46 +15,46 @@ def ORDER_DETAIL(o):
 
 @pytest.mark.django_db
 class TestOrderFiltering:
-    def test_filter_by_status(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
-        resp = anon_client.get(f"{ORDER_LIST}?status=pending")
+    def test_filter_by_status(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
+        resp = api_client.get(f"{ORDER_LIST}?status=pending")
         assert resp.status_code == 200
         assert {o["status"] for o in resp.data["results"]} == {
             Order.StatusChoices.PENDING
         }
 
-    def test_filter_total_min(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u2"])
-        resp = anon_client.get(f"{ORDER_LIST}?total_min=10")
+    def test_filter_total_min(self, api_client, orders):
+        api_client.force_authenticate(orders["u2"])
+        resp = api_client.get(f"{ORDER_LIST}?total_min=10")
         assert resp.status_code == 200
         assert len(resp.data["results"]) == 1
 
-    def test_filter_total_max(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
-        resp = anon_client.get(f"{ORDER_LIST}?total_max=20")
+    def test_filter_total_max(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
+        resp = api_client.get(f"{ORDER_LIST}?total_max=20")
         assert resp.status_code == 200
         assert len(resp.data["results"]) == 2
 
-    def test_filter_created_range(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
+    def test_filter_created_range(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
         past = (timezone.now() - timezone.timedelta(days=365)).date().isoformat()
-        resp = anon_client.get(f"{ORDER_LIST}?created_after={past}")
+        resp = api_client.get(f"{ORDER_LIST}?created_after={past}")
         assert resp.status_code == 200
 
 
 @pytest.mark.django_db
 class TestOrderCRUD:
-    def test_list_only_my_orders(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
-        resp = anon_client.get(ORDER_LIST)
+    def test_list_only_my_orders(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
+        resp = api_client.get(ORDER_LIST)
         assert resp.status_code == status.HTTP_200_OK
         # check no other orders are returned
         order_ids = {o["order_id"] for o in resp.data["results"]}
         assert order_ids == {str(orders["o1"].order_id), str(orders["o3"].order_id)}
 
-    def test_retrieve_my_order(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
-        resp = anon_client.get(ORDER_DETAIL(orders["o1"]))
+    def test_retrieve_my_order(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
+        resp = api_client.get(ORDER_DETAIL(orders["o1"]))
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["order_number"] == orders["o1"].order_number
 
@@ -67,10 +67,10 @@ class TestOrderCRUD:
         resp = admin_client.get(ORDER_DETAIL(orders["o2"]))
         assert resp.status_code == status.HTTP_200_OK
 
-    def test_update_my_pending_order(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
+    def test_update_my_pending_order(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
         url = ORDER_DETAIL(orders["o1"])
-        resp = anon_client.patch(
+        resp = api_client.patch(
             url,
             {"status": Order.StatusChoices.CONFIRMED},
             format="json",
@@ -97,46 +97,39 @@ class TestOrderCRUD:
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
+@pytest.mark.django_db
+class TestOrderPermissions:
+    def test_non_admin_cannot_create_order(self, auth_client, user):
+        auth_client.force_authenticate(user=user)
+        payload = {"items": []}
+        resp = auth_client.post(ORDER_LIST, payload, format="json")
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_admin_can_create_order(self, admin_client, products):
+        payload = {"items": [{"product_id": products[0].pk, "quantity": 1}]}
+        resp = admin_client.post(ORDER_LIST, payload, format="json")
+        assert resp.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
 class TestOrderDelete:
-    def test_owner_can_delete_pending(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u1"])
-        resp = anon_client.delete(ORDER_DETAIL(orders["o1"]))
+    def test_owner_can_delete_pending(self, api_client, orders):
+        api_client.force_authenticate(orders["u1"])
+        resp = api_client.delete(ORDER_DETAIL(orders["o1"]))
         assert resp.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_owner_cannot_delete_confirmed(self, anon_client, orders):
-        anon_client.force_authenticate(orders["u2"])
-        resp = anon_client.delete(ORDER_DETAIL(orders["o2"]))
+    def test_owner_cannot_delete_confirmed(self, api_client, orders):
+        api_client.force_authenticate(orders["u2"])
+        resp = api_client.delete(ORDER_DETAIL(orders["o2"]))
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
     def test_admin_can_delete_any(self, admin_client, orders):
         resp = admin_client.delete(ORDER_DETAIL(orders["o2"]))
         assert resp.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_unauthenticated_delete(self, anon_client, orders):
-        resp = anon_client.delete(ORDER_DETAIL(orders["o1"]))
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
-
-
-@pytest.mark.django_db
-class TestOrderCheckout:
-    def test_checkout_moves_cart_and_hides_it(self, auth_client, cart_with_items):
-        # Use the user who owns a PENDING-cart
-        client, cart = auth_client, cart_with_items
-        client.force_authenticate(cart.user)
-
-        # Perform checkout
-        resp = client.post(f"{ORDER_LIST}{cart.order_id}/checkout/")
-        assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["status"] == Order.StatusChoices.CONFIRMED
-
-        # Now /orders/ should include this order
-        resp2 = client.get(ORDER_LIST)
-        ids = {o["order_id"] for o in resp2.data["results"]}
-        assert str(cart.order_id) in ids
-
-        # And /cart/ must now return 404 (no more PENDING)
-        resp3 = client.get(CART_LIST)
-        assert resp3.status_code == status.HTTP_404_NOT_FOUND
+    def test_unauthenticated_delete(self, api_client, orders):
+        resp = api_client.delete(ORDER_DETAIL(orders["o1"]))
+        assert resp.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.django_db

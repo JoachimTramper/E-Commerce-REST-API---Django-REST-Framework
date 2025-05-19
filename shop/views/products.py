@@ -10,6 +10,7 @@ from rest_framework.throttling import (
     ScopedRateThrottle,
     UserRateThrottle,
 )
+from silk.profiling.profiler import silk_profile
 
 from shop.docs.examples import PRODUCT_EXAMPLES
 from shop.filters import ProductFilter
@@ -45,13 +46,22 @@ class ProductViewSet(viewsets.ModelViewSet):
         AnonRateThrottle,
         ScopedRateThrottle,
     ]
-    throttle_scope = "read-burst"
+
+    def get_throttles(self):
+        if self.request.method in ("POST", "PUT", "PATCH", "DELETE"):
+            self.throttle_scope = "write-burst"
+        elif not self.request.user or not self.request.user.is_authenticated:
+            self.throttle_scope = "anon"
+        else:
+            self.throttle_scope = "user"
+        return super().get_throttles()
+
+    @method_decorator(cache_page(30))  # Cache for 30 seconds
+    def list(self, request, *args, **kwargs):
+        with silk_profile(name="product-list"):
+            return super().list(request, *args, **kwargs)
 
     @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    # caching at product level
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
         response["Cache-Control"] = "public, max-age=300"

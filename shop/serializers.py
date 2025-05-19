@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from .models import Order, OrderItem, Product
 
@@ -94,10 +95,16 @@ class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Check if the user has a pending order
-        pending = Order.objects.get(
-            user=self.context["request"].user, status=Order.StatusChoices.PENDING
-        )
+        user = self.context["request"].user
+
+        # try to collect the pending order
+        try:
+            pending = Order.objects.get(user=user, status=Order.StatusChoices.PENDING)
+        except Order.DoesNotExist:
+            # if there is no pending order, return 403
+            raise PermissionDenied("Cannot add items: no pending order exists.")
+
+        # Otherwise, create the order item
         return OrderItem.objects.create(
             order=pending,
             product=validated_data["product"],

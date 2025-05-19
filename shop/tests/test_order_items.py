@@ -1,6 +1,8 @@
 import pytest
 from rest_framework import status
 
+from shop.models import Order, OrderItem
+
 ITEM_LIST = "/api/shop/order-items/"
 
 
@@ -59,9 +61,9 @@ class TestOrderItemCRUD:
         resp = admin_client.get(ITEM_DETAIL(items["i3"]))
         assert resp.status_code == status.HTTP_200_OK
 
-    def test_create_requires_auth(self, anon_client, products, orders):
+    def test_create_requires_auth(self, api_client, products, orders):
         payload = {"product": products[0].pk, "quantity": 1}
-        resp = anon_client.post(ITEM_LIST, payload, format="json")
+        resp = api_client.post(ITEM_LIST, payload, format="json")
         print("STATUS:", resp.status_code)
         print("DATA:  ", resp.data)
         assert resp.status_code == status.HTTP_401_UNAUTHORIZED
@@ -75,6 +77,36 @@ class TestOrderItemCRUD:
         assert data["product"] == items["p2"].id
         assert data["quantity"] == 2
         assert float(data["item_subtotal"]) == 2 * float(items["p2"].price)
+
+    def test_first_post_creates_pending_order_and_item(
+        self, api_client, user, products
+    ):
+        client = api_client
+        client.force_authenticate(user=user)
+
+        # sanity check: no pending order yet for this user
+        assert not Order.objects.filter(
+            user=user, status=Order.StatusChoices.PENDING
+        ).exists()
+        # perform the POST to create an item
+        payload = {"product": products[0].pk, "quantity": 2}
+        resp = client.post(ITEM_LIST, payload, format="json")
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
+
+        # exactly one new pending Order should now exist
+        pending_qs = Order.objects.filter(user=user, status=Order.StatusChoices.PENDING)
+        assert pending_qs.count() == 1
+        order = pending_qs.get()
+
+        # the returned order_id must match that Order
+        assert str(order.order_id) == resp.data["order"]
+
+        # exactly one order-item
+        items = OrderItem.objects.filter(order=order)
+        assert items.count() == 1
+        oi = items.first()
+        assert oi.product_id == products[0].pk
+        assert oi.quantity == 2
 
     def test_patch_nonexistent_returns_404(self, admin_client):
         fake_id = 999999
@@ -115,14 +147,18 @@ class TestOrderItemEdgeCases:
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert "only" in str(resp.data).lower()
 
-    def test_create_on_confirmed_order_forbidden(self, anon_client, orders, products):
-        anon_client.force_authenticate(user=orders["u2"])
+    def test_create_after_confirmed_starts_new_order(
+        self, api_client, orders, products
+    ):
+        api_client.force_authenticate(user=orders["u2"])
         payload = {"product": products[2].id, "quantity": 1}
-        resp = anon_client.post(ITEM_LIST, payload, format="json")
-        assert resp.status_code in (
-            status.HTTP_403_FORBIDDEN,
-            status.HTTP_404_NOT_FOUND,
+        resp = api_client.post(ITEM_LIST, payload, format="json")
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
+
+        pendings = Order.objects.filter(
+            user=orders["u2"], status=Order.StatusChoices.PENDING
         )
+        assert pendings.count() == 1
 
     def test_update_owner_pending(self, item_client, items):
         item = items["i1"]

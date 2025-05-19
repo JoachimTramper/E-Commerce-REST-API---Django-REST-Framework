@@ -94,3 +94,11 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         if self.action in ("create", "update", "partial_update"):
             return OrderItemCreateUpdateSerializer
         return OrderItemDetailSerializer
+
+    def perform_create(self, serializer):
+        # make sure the user has a pending order
+        order, created = Order.objects.get_or_create(
+            user=self.request.user, status=Order.StatusChoices.PENDING
+        )
+        # save the order item with the order
+        serializer.save(order=order)

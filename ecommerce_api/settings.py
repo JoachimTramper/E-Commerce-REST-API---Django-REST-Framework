@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework.authtoken",
     "djoser",
+    "silk",
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "silk.middleware.SilkyMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -258,10 +260,16 @@ else:
     SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_PRELOAD = False
 
-# Swap naar in-memory cache tijdens pytest
+# Swap to in-memory cache and lower throttling rates during pytest
 if RUNNING_TESTS:
     CACHES["default"] = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+        "user": "3/hour",
+        "anon": "3/hour",
+        "read-burst": "3/minute",
+        "write-burst": "3/minute",
     }
 
 # Always enable XSS protection header and clickjacking prevention
@@ -302,3 +310,22 @@ DJOSER = {
         "user": "users.serializers.UserSerializer",
     },
 }
+
+if DEBUG:
+    # In development, don’t attempt real SMTP—print mails to the console
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.getenv("EMAIL_HOST")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+    EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@joachimtramper.com")
+    SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+
+# Silk settings
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_ANALYZE_QUERIES = True
+SILKY_INTERCEPT_PERCENT = 100

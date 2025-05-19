@@ -31,3 +31,6 @@ Thumbs.db
 
 # Backup files
 shop/backup.py
+
+# Silk / Python profiler dumps
+*.prof

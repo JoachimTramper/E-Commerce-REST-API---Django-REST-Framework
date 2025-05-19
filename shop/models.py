@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db import models
 from django.db.models import DecimalField, F, Max, Q, Sum, UniqueConstraint
 
@@ -88,6 +89,18 @@ class Order(models.Model):
         # set the total amount directly
         self._total_amount = value
 
+    @property
+    def cached_total_amount(self):
+        cache_key = f"order_total_{self.pk}"
+        total = cache.get(cache_key)
+        if total is None:
+            total = (
+                self.items.aggregate(total=Sum(F("quantity") * F("price")))["total"]
+                or 0
+            )
+            cache.set(cache_key, total, timeout=60)  # cache 1 minuut
+        return total
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
@@ -100,14 +113,21 @@ class OrderItem(models.Model):
     )
     _item_subtotal = None
 
+    class Meta:
+        ordering = ["pk"]
+
     def save(self, *args, **kwargs):
         # set price to product price if not set
         if self._state.adding and (self.price == Decimal("0.00")):
             self.price = self.product.price
         super().save(*args, **kwargs)
+        cache.delete(f"order_total_{self.order.pk}")
 
-    class Meta:
-        ordering = ["pk"]
+    def delete(self, *args, **kwargs):
+        order_pk = self.order.pk
+        super().delete(*args, **kwargs)
+        # Clear cache
+        cache.delete(f"order_total_{order_pk}")
 
     @property
     def item_subtotal(self):

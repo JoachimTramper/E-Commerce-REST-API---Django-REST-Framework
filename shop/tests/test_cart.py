@@ -1,6 +1,8 @@
 import pytest
 from rest_framework import status
 
+from shop.models import Order
+
 CART_LIST = "/api/shop/cart/"
 CART_ITEMS_LIST = "/api/shop/cart/items/"
 
@@ -52,9 +54,9 @@ class TestCartItemListDirect:
 
 @pytest.mark.django_db
 class TestCartItemCRUD:
-    def test_create_requires_auth(self, anon_client, products):
+    def test_create_requires_auth(self, api_client, products):
         payload = {"product": products[0].pk, "quantity": 1}
-        resp = anon_client.post(CART_ITEMS_LIST, payload, format="json")
+        resp = api_client.post(CART_ITEMS_LIST, payload, format="json")
         assert resp.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_add_first_item_creates_cart(self, auth_client, products, no_order_user):
@@ -122,6 +124,40 @@ class TestCartItemCRUD:
         assert resp.status_code == status.HTTP_200_OK
         data = resp.data
         assert len(data["items"]) == 1
+
+
+@pytest.mark.django_db
+class TestCartCheckout:
+    def test_checkout_confirms_order_and_clears_cart(
+        self, auth_client, cart_with_items
+    ):
+        """
+        POST /cart/checkout/:
+        1) return 204 No Content
+        2) confirmed order appears in /orders/ with status=CONFIRMED
+        3) GET /cart/ returns 404
+        """
+        client, cart = auth_client, cart_with_items
+        client.force_authenticate(cart.user)
+
+        # Checkout → no response body
+        resp = client.post(f"{CART_LIST}checkout/")
+        assert resp.status_code == status.HTTP_204_NO_CONTENT
+
+        # Verify order moved to /orders/ with correct status
+        orders_resp = client.get("/api/shop/orders/")
+        assert orders_resp.status_code == status.HTTP_200_OK
+        confirmed = [
+            o
+            for o in orders_resp.data["results"]
+            if o["order_id"] == str(cart.order_id)
+        ]
+        assert confirmed, "Confirmed order not found"
+        assert confirmed[0]["status"] == Order.StatusChoices.CONFIRMED
+
+        # Pending cart endpoint now returns 404
+        cart_resp = client.get(CART_LIST)
+        assert cart_resp.status_code == status.HTTP_404_NOT_FOUND
 
 
 @pytest.mark.django_db

@@ -13,10 +13,5 @@ router.register(r"profiles", CustomerProfileViewSet, basename="profiles")
 router.register(r"addresses", AddressViewSet, basename="addresses")
 
 urlpatterns = [
-    # Djoser basic endpoints: register, activate, password reset, user detail
-    path("", include("djoser.urls")),
-    # JWT endpoints: /users/jwt/create/, /users/jwt/refresh/, /users/jwt/verify/
-    path("", include("djoser.urls.jwt")),
-    # Other endpoints
     path("", include(router.urls)),
 ]

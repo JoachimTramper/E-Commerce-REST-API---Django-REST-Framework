@@ -9,15 +9,18 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/api/docs/", permanent=False)),
     # Django admin
     path("admin/", admin.site.urls),
-    # JWT Authentication endpoints
+    # JWT via SimpleJWT
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    # SessionAuthentication for browsable API login/logout
+    # Browsable API login/logout
     path("api/auth/", include("rest_framework.urls")),
-    # Shop and user app APIs via router
+    # Auth-flows via Djoser
+    path("api/auth/", include("djoser.urls")),
+    path("api/auth/", include("djoser.urls.jwt")),
+    # Shop and user-app
     path("api/shop/", include(("shop.urls"), namespace="shop")),
     path("api/users/", include(("users.urls"), namespace="users")),
-    # API schema generation and documentation
+    # API schema and docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",
@@ -29,4 +32,5 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui-no-slash",
     ),
+    path("silk/", include("silk.urls", namespace="silk")),
 ]
