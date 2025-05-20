@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse
 from rest_framework import status
 
 from shop.models import Product
@@ -10,6 +11,7 @@ def PRODUCT_DETAIL(pk):
     return f"{PRODUCT_LIST}{pk}/"
 
 
+@pytest.mark.django_db
 class TestProductRead:
     def test_list_public(self, api_client, products):
         resp = api_client.get(PRODUCT_LIST)
@@ -22,6 +24,7 @@ class TestProductRead:
         assert resp.data["name"] == products[0].name
 
 
+@pytest.mark.django_db
 class TestProductCRUDPermissions:
     def test_create_requires_auth(self, api_client):
         resp = api_client.post(PRODUCT_LIST, {"name": "X", "price": 1, "stock": 1})
@@ -54,6 +57,7 @@ class TestProductCRUDPermissions:
         assert resp.status_code == status.HTTP_204_NO_CONTENT
 
 
+@pytest.mark.django_db
 class TestProductPagination:
     @pytest.fixture(autouse=True)
     def many_products(self, db):
@@ -65,20 +69,27 @@ class TestProductPagination:
         assert "results" in resp.data and len(resp.data["results"]) <= 10
 
 
-@pytest.mark.parametrize(
-    "param,value,expected",
-    [
-        ("price_min", 5, {"Mid", "Exp"}),
-        ("price_max", 5, {"Cheap", "Mid"}),
-        ("in_stock", True, {"Cheap", "Exp"}),
-        ("name", "ea", {"Cheap"}),
-    ],
-)
-def test_product_filters(auth_client, products, param, value, expected):
-    resp = auth_client.get(f"{PRODUCT_LIST}?{param}={value}")
-    assert resp.status_code == status.HTTP_200_OK
-    names = {p["name"] for p in resp.data["results"]}
-    assert names == expected
+@pytest.mark.django_db
+class TestProductFilters:
+    @pytest.mark.parametrize(
+        "param,value,expected_names",
+        [
+            ("price_min", 5, {"Mid", "Exp"}),
+            ("price_max", 5, {"Cheap", "Mid"}),
+            ("in_stock", True, {"Cheap", "Exp"}),
+            ("name", "ea", {"Cheap"}),
+        ],
+    )
+    def test_filters_on_list(self, auth_client, products, param, value, expected_names):
+        """
+        Ensure that the filters price_min, price_max, in_stock and name work.
+        """
+        url = reverse("shop:products-list") + f"?{param}={value}"
+        resp = auth_client.get(url)
+
+        assert resp.status_code == status.HTTP_200_OK
+        names = {item["name"] for item in resp.data["results"]}
+        assert names == expected_names
 
 
 @pytest.mark.django_db
