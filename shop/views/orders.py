@@ -69,7 +69,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     throttle_scope = "write-burst"
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().prefetch_related("items__product")
         if self.request.user.is_staff:
             return qs.order_by("-created_at")
         return qs.filter(user=self.request.user).order_by("-created_at")

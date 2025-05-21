@@ -49,7 +49,9 @@ class CartViewSet(viewsets.ViewSet):
 
     def list(self, request):
         cart = get_object_or_404(
-            Order.objects.annotate(
+            Order.objects.prefetch_related(
+                "items__product"
+            ).annotate(  # goed: product is een FK op OrderItem
                 total_amount=Sum(
                     F("items__quantity") * F("items__price"),
                     output_field=DecimalField(max_digits=12, decimal_places=2),
@@ -116,7 +118,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Only show items from the current user's pending cart
-        return OrderItem.objects.filter(
+        return OrderItem.objects.select_related("product", "order").filter(
             order__user=self.request.user, order__status=Order.StatusChoices.PENDING
         )
 
