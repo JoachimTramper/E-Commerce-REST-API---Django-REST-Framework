@@ -336,3 +336,8 @@ SILKY_INTERCEPT_PERCENT = 0
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+
+# Celery eager mode for tests and debug
+if DEBUG or os.environ.get("PYTEST_RUNNING") == "1":
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
