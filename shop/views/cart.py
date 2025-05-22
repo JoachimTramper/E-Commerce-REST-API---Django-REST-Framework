@@ -19,6 +19,7 @@ from shop.serializers import (
     OrderItemDetailSerializer,
     OrderItemListSerializer,
 )
+from shop.tasks import send_order_confirmation_email
 
 
 @extend_schema_view(
@@ -64,14 +65,13 @@ class CartViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["post"], url_path="checkout")
     def checkout(self, request):
-        """
-        Perform checkout: set the cart status from PENDING to CONFIRMED.
-        """
         cart = get_object_or_404(
             Order, user=request.user, status=Order.StatusChoices.PENDING
         )
         cart.status = Order.StatusChoices.CONFIRMED
         cart.save()
+        # Trigger Celery task
+        send_order_confirmation_email.delay(str(cart.order_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
