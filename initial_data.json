@@ -8086,7 +8086,7 @@
       "number": "172",
       "zipcode": "07526",
       "city": "Virginiahaven",
-      "country": "British Indian Ocean Territory (Chagos Archipelago)",
+      "country": "British Indian Ocean Territory",
       "is_billing": true,
       "is_shipping": true
     }
@@ -8281,7 +8281,7 @@
       "number": "37",
       "zipcode": "75727",
       "city": "North Amanda",
-      "country": "British Indian Ocean Territory (Chagos Archipelago)",
+      "country": "British Indian Ocean Territory",
       "is_billing": false,
       "is_shipping": true
     }
