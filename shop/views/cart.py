@@ -19,7 +19,7 @@ from shop.serializers import (
     OrderItemDetailSerializer,
     OrderItemListSerializer,
 )
-from shop.tasks import send_order_confirmation_email
+from shop.tasks import send_order_email_with_invoice
 
 
 @extend_schema_view(
@@ -71,7 +71,7 @@ class CartViewSet(viewsets.ViewSet):
         cart.status = Order.StatusChoices.CONFIRMED
         cart.save()
         # Trigger Celery task
-        send_order_confirmation_email.delay(str(cart.order_id))
+        send_order_email_with_invoice.delay(str(cart.order_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

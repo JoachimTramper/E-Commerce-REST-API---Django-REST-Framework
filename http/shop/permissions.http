@@ -1,5 +1,5 @@
 @base_url = http://localhost:8000/api
-@user_token = 
+@user_token =
 
 ### Login User (obtain JWT) ------------------------------------------------------------------------------------
 
@@ -7,8 +7,8 @@ POST {{base_url}}/token/
 Content-Type: application/json
 
 {
-  "email": "danielle31@example.com",
-  "password": "J20vJlWV1Gg0"
+  "email": "kristin53@example.net",
+  "password": "mxKFCg22nv"
 }
 
 

@@ -9,7 +9,7 @@ Content-Type: application/json
 
 {
   "email": "joachimtramper@gmail.com",
-  "password": "hello123456"
+  "password": "Hello123456!"
 }
 
 # > {% client.global.set("ACCESS", response.body.access) %}
