@@ -1,7 +1,11 @@
+from datetime import datetime
+
 import django.views.decorators.cache as _cache_mod
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.utils import timezone
+from model_bakery import baker
 from rest_framework.test import APIClient
 from rest_framework.throttling import (
     AnonRateThrottle,
@@ -204,3 +208,41 @@ def disable_view_level_caching(monkeypatch, request):
             monkeypatch.setattr(
                 ProductViewSet, "retrieve", ProductViewSet.retrieve.__wrapped__
             )
+
+
+#
+# ─── PERIODIC TASKS ───────────────────────────────────────────────────────────────
+#
+
+
+@pytest.fixture(autouse=True)
+def celery_eager_settings(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+
+@pytest.fixture(autouse=True)
+def freeze_time(monkeypatch):
+    fixed_now = timezone.make_aware(datetime(2025, 5, 23, 12, 0, 0))
+    monkeypatch.setattr(timezone, "now", lambda: fixed_now)
+    return fixed_now
+
+
+@pytest.fixture
+def user_factory():
+    return lambda **kwargs: baker.make("users.User", **kwargs)
+
+
+@pytest.fixture
+def order_factory():
+    return lambda **kwargs: baker.make("shop.Order", **kwargs)
+
+
+@pytest.fixture
+def product_factory():
+    return lambda **kwargs: baker.make("shop.Product", **kwargs)
+
+
+@pytest.fixture
+def order_item_factory():
+    return lambda **kwargs: baker.make("shop.OrderItem", **kwargs)

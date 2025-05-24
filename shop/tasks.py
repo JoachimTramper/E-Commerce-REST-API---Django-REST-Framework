@@ -1,12 +1,13 @@
 import csv
 import io
+from datetime import timedelta
 
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
-from django.utils.timezone import localtime
+from django.utils import timezone
 from xhtml2pdf import pisa
 
 from shop.models import Order
@@ -38,7 +39,7 @@ def generate_order_report(user_id):
             [
                 order.order_number,
                 order.status,
-                localtime(order.created_at).strftime("%Y-%m-%d %H:%M"),
+                timezone.localtime(order.created_at).strftime("%Y-%m-%d %H:%M"),
                 order.items.count(),
             ]
         )
@@ -96,3 +97,103 @@ def send_order_email_with_invoice(order_id):
     email.send()
 
     return f"Order email with invoice sent for order {order_id}"
+
+
+@shared_task
+def send_pending_order_reminders():
+    now = timezone.now()
+
+    orders = Order.objects.filter(status=Order.StatusChoices.PENDING)
+
+    for order in orders:
+        elapsed = timezone.now() - order.created_at
+        print(
+            f"[REMINDER] Order {order.order_number}: created_at={order.created_at}, "
+            f"elapsed={elapsed}"
+        )
+        email = order.user.email
+        name = order.user.first_name
+        order_num = order.order_number
+        created_at = order.created_at
+        time_since = now - created_at
+
+        if abs(time_since - timedelta(hours=1)) < timedelta(minutes=5):
+            send_mail(
+                f"Reminder: Complete Your Order #{order_num}",
+                f"Hi {name},\n\n"
+                "Just a quick reminder that your order is still waiting for you!\n\n"
+                "Kind regards,\nTeam",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+            )
+        elif abs(time_since - timedelta(hours=12)) < timedelta(minutes=5):
+            send_mail(
+                f"Second Reminder: Order #{order_num} Still Pending",
+                f"Hi {name},\n\n"
+                "We're holding your order for a bit longer. Want to finish checking out?\n\n"
+                "Team",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+            )
+
+
+def _cancel_stale_pending_orders():
+    now = timezone.now()
+    cutoff = now - timedelta(hours=24)
+
+    stale_orders = Order.objects.filter(
+        status=Order.StatusChoices.PENDING, created_at__lt=cutoff
+    )
+
+    for order in stale_orders:
+        order.status = Order.StatusChoices.CANCELLED
+        order.save()
+
+        send_mail(
+            f"Order #{order.order_number} Cancelled",
+            f"Hi {order.user.first_name},\n\n"
+            "We’ve cancelled your order as it wasn’t completed within 24 hours.\n\n"
+            "Team",
+            settings.DEFAULT_FROM_EMAIL,
+            [order.user.email],
+        )
+
+    return f"{stale_orders.count()} pending orders cancelled."
+
+
+# bypassing _cancel_stale_pending_orders to avoid deleting orders in DEBUG mode
+@shared_task
+def cancel_stale_pending_orders():
+    if not settings.DEBUG:
+        return _cancel_stale_pending_orders()
+    return "Skipping auto-cancellation in DEBUG mode"
+
+
+@shared_task
+def send_daily_sales_report():
+    start = timezone.now().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ) - timedelta(days=1)
+    end = start + timedelta(days=1)
+
+    orders = Order.objects.filter(created_at__range=(start, end))
+    total_orders = orders.count()
+    total_revenue = sum(order.total_amount for order in orders)
+    cancelled_orders = orders.filter(status=Order.StatusChoices.CANCELLED).count()
+
+    message = (
+        f"🛒 Daily Sales Report ({start.date()}):\n\n"
+        f"- Total Orders: {total_orders}\n"
+        f"- Total Revenue: €{total_revenue:.2f}\n"
+        f"- Cancelled Orders: {cancelled_orders}\n"
+    )
+
+    email = EmailMessage(
+        subject=f"Daily Sales Report – {start.date()}",
+        body=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=["admin@shop.com"],
+    )
+    email.send()
+
+    return f"Sales report sent for {start.date()}"

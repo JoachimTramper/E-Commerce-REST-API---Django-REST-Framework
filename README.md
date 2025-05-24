@@ -2,11 +2,11 @@
 
 An API built with Django REST Framework to support an e-commerce platform. Key features include:
 
-* CRUD operations for products, orders, and users
-* JWT authentication
-* Caching? Throttling?
-* Live Swagger-UI documentation with **Try it out** buttons
-* Auto-generated TypeScript-Axios client SDK
+- CRUD operations for products, orders, and users
+- JWT authentication
+- Caching? Throttling?
+- Live Swagger-UI documentation with **Try it out** buttons
+- Auto-generated TypeScript-Axios client SDK
 
 ## Repository Structure
 
@@ -29,6 +29,7 @@ An API built with Django REST Framework to support an e-commerce platform. Key f
    git clone https://github.com/joachimtramper/E-Commerce-REST-API---Django-REST-Framework.git
    cd E-Commerce-REST-API---Django-REST-Framework
    ```
+
 2. **Create and activate a virtual environment**
 
    ```bash
@@ -38,11 +39,13 @@ An API built with Django REST Framework to support an e-commerce platform. Key f
    # On Unix/macOS:
    source .venv/bin/activate
    ```
+
 3. **Install dependencies**
 
    ```bash
    pip install -r requirements.txt
    ```
+
 4. **Apply migrations & run the server**
 
    ```bash
@@ -64,8 +67,8 @@ https://web-production-7c555.up.railway.app
 
 Use these test credentials to authenticate in Swagger-UI or via the client SDK:
 
-| Username                                    | Password     |
-| ------------------------------------------- | ------------ |
+| Username                                             | Password     |
+| ---------------------------------------------------- | ------------ |
 | [mirandadennis@example.com](mailto:demo@example.com) | yjffdaMUWuCl |
 
 Obtain a JWT token by POSTing to `/api/token/`:
@@ -103,26 +106,60 @@ npm run build
 ### Usage Example
 
 ```ts
-import { CartApi, Configuration } from '@mijnorg/ecommerce-api-client';
+import { CartApi, Configuration } from "@mijnorg/ecommerce-api-client";
 
 const api = new CartApi(
-  new Configuration({ basePath: 'https://web-production-7c555.up.railway.app' })
+  new Configuration({ basePath: "https://web-production-7c555.up.railway.app" })
 );
 
-api.getCart()
-  .then(response => console.log(response.data))
+api
+  .getCart()
+  .then((response) => console.log(response.data))
   .catch(console.error);
 ```
 
 ## Configuration
 
-* **Allowed hosts:** configured in `ecommerce_api/settings.py` to include the Railway domain.
-* **Environment variables** (Railway):
+- **Allowed hosts:** configured in `ecommerce_api/settings.py` to include the Railway domain.
+- **Environment variables** (Railway):
 
-  * `DJANGO_SECRET_KEY` (secure random string)
-  * `DEBUG=False`
-  * `DATABASE_URL` (if using PostgreSQL plugin)
+  - `DJANGO_SECRET_KEY` (secure random string)
+  - `DEBUG=False`
+  - `DATABASE_URL` (if using PostgreSQL plugin)
 
 ---
 
-*End-to-end demo: code, live backend, interactive docs, and client SDK.*
+## Local Development with Docker
+
+This project includes a complete Docker-based setup to run the full backend stack locally in a production-like environment. Using `docker-compose`, you can launch:
+
+- Django + Gunicorn (`web`)
+- Celery worker (`celery`)
+- Celery Beat scheduler (`beat`)
+- Redis message broker (`redis`)
+- PostgreSQL database (`db`)
+
+### Start the stack
+
+```bash
+docker-compose up --build
+```
+
+This builds and runs all services, exposing the Django API at [http://localhost:8000](http://localhost:8000).
+
+### One-time setup
+
+After building the stack, initialize the database and create a superuser:
+
+```bash
+docker exec -it ecommerce-api-web-1 python manage.py migrate
+docker exec -it ecommerce-api-web-1 python manage.py createsuperuser
+```
+
+### Background tasks
+
+Celery and Celery Beat run in separate containers and process tasks using Redis as a message broker. Tasks like email reminders, daily reports, and cleanup jobs are automatically triggered on schedule.
+
+> Django runs with `DEBUG=True` by default in Docker. Auto-cancellation of orders is skipped during development.
+
+_End-to-end demo: code, live backend, interactive docs, and client SDK._
