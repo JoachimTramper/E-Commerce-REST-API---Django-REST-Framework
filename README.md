@@ -164,6 +164,4 @@ Celery and Celery Beat run in separate containers and process tasks using Redis 
 
 ---
 
----
-
 _End-to-end demo: code, live backend, interactive docs, and client SDK._
