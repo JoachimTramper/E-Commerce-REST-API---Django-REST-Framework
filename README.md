@@ -162,4 +162,8 @@ Celery and Celery Beat run in separate containers and process tasks using Redis 
 
 > Django runs with `DEBUG=True` by default in Docker. Auto-cancellation of orders is skipped during development.
 
+---
+
+---
+
 _End-to-end demo: code, live backend, interactive docs, and client SDK._
