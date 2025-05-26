@@ -1,9 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views.address import AddressViewSet
-from .views.profile import CustomerProfileViewSet
-from .views.user import UserViewSet
+from .views.addresses import AddressViewSet
+from .views.profiles import CustomerProfileViewSet
+from .views.users import UserViewSet
 
 app_name = "users"
 

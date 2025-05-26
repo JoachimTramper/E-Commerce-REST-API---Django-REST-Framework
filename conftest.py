@@ -246,3 +246,32 @@ def product_factory():
 @pytest.fixture
 def order_item_factory():
     return lambda **kwargs: baker.make("shop.OrderItem", **kwargs)
+
+
+#
+# ─── USERS-SPECIFIC FIXTURES ─────────────────────────────────────────────────────
+#
+
+
+@pytest.fixture
+def profile(user):
+    from users.models import CustomerProfile
+
+    return CustomerProfile.objects.create(user=user, phone_number="0611223344")
+
+
+@pytest.fixture
+def address(profile):
+    from users.models import Address
+
+    return Address.objects.create(
+        profile=profile,
+        label="Thuis",
+        street="Voorbeeldstraat",
+        number="1",
+        zipcode="1234AB",
+        city="Amsterdam",
+        country="Nederland",
+        is_billing=True,
+        is_shipping=True,
+    )

@@ -1,0 +1,3 @@
+# ignore all HTML-templates
+**/*.html
+**/*.djhtml
