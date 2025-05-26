@@ -79,7 +79,7 @@ Content-Type: application/json
 
 {
   "username": "demo@example.com",
-  "password": "DemoPass123!"
+  "password": "example_password"
 }
 ```
 

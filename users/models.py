@@ -1,12 +1,15 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
+
+    history = HistoricalRecords()
 
 
 class CustomerProfile(models.Model):
@@ -15,7 +18,8 @@ class CustomerProfile(models.Model):
     )
     phone_number = models.CharField(max_length=20, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    # … ander PII-velden …
+
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.user.username
@@ -33,6 +37,8 @@ class Address(models.Model):
     country = models.CharField(max_length=50)
     is_billing = models.BooleanField(default=False)
     is_shipping = models.BooleanField(default=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = "Address"
