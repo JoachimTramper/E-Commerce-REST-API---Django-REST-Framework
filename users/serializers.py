@@ -3,24 +3,49 @@ from rest_framework import serializers
 from .models import Address, CustomerProfile, User
 
 
-class CustomerProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomerProfile
-        fields = "__all__"
-
-
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = "__all__"
+        fields = [
+            "id",
+            "label",
+            "street",
+            "number",
+            "zipcode",
+            "city",
+            "country",
+            "is_billing",
+            "is_shipping",
+        ]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    addresses = AddressSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CustomerProfile
+        fields = ["id", "phone_number", "date_of_birth", "addresses"]
+        read_only_fields = ["id", "addresses"]
+
+
+class AdminProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerProfile
+        fields = ["id", "user", "phone_number", "date_of_birth"]
+        extra_kwargs = {
+            "user": {"required": True},
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = CustomerProfileSerializer(read_only=True)
+    profile = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name", "profile"]
+        fields = ["id", "email", "username", "first_name", "last_name", "profile"]
+
+        # Unique name for openapi schema generation
+        ref_name = "AppUser"
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -28,7 +53,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "password", "first_name", "last_name")
+        fields = ("email", "username", "password", "first_name", "last_name")
 
     def create(self, validated_data):
         user = User.objects.create_user(

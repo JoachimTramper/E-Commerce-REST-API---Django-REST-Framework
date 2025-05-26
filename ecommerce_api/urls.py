@@ -5,7 +5,9 @@ from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from shop.views.health import health_check
 from shop.views.payments import payment_webhook
+from users.views.me import MeAddressListCreateView, MeDeleteView, MeProfileView
 
 urlpatterns = [
     # redirect root to Swagger UI
@@ -25,6 +27,9 @@ urlpatterns = [
     # payment webhook
     path("api/webhooks/payment/", payment_webhook, name="payment-webhook"),
     path("api/users/", include(("users.urls"), namespace="users")),
+    path("api/me/profile/", MeProfileView.as_view(), name="me-profile"),
+    path("api/me/addresses/", MeAddressListCreateView.as_view(), name="me-addresses"),
+    path("api/me/delete/", MeDeleteView.as_view(), name="me-delete"),
     # API schema and docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
@@ -37,6 +42,8 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui-no-slash",
     ),
+    # health check
+    path("api/health/", health_check, name="health-check"),
 ]
 
 if settings.DEBUG:

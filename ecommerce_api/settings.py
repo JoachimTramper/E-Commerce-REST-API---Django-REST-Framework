@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "djoser",
     "silk",
     "django_celery_beat",
+    "simple_history",
 ]
 
 MIDDLEWARE = [
@@ -92,6 +93,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -314,6 +316,7 @@ DJOSER = {
     },
 }
 
+
 if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -324,7 +327,7 @@ else:
     EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
     EMAIL_HOST_USER = os.getenv("EMAIL_USER")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@joachimtramper.com")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@ecommerceapi.com")
     SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 # Silk settings

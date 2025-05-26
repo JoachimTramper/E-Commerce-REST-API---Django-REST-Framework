@@ -79,7 +79,7 @@ Content-Type: application/json
 
 {
   "username": "demo@example.com",
-  "password": "DemoPass123!"
+  "password": "example_password"
 }
 ```
 
@@ -161,8 +161,6 @@ docker exec -it ecommerce-api-web-1 python manage.py createsuperuser
 Celery and Celery Beat run in separate containers and process tasks using Redis as a message broker. Tasks like email reminders, daily reports, and cleanup jobs are automatically triggered on schedule.
 
 > Django runs with `DEBUG=True` by default in Docker. Auto-cancellation of orders is skipped during development.
-
----
 
 ---
 
