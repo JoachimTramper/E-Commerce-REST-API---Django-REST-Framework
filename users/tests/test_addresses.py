@@ -23,7 +23,7 @@ class TestAddressDetail:
 
         # Create another user with their own address
         other_user = User.objects.create_user(
-            email="other@example.com", username="other", password="pass123"
+            email="other@example.com", username="other", password="test1234"
         )
         profile = CustomerProfile.objects.create(user=other_user)
         other_address = Address.objects.create(
