@@ -4,6 +4,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from two_factor.urls import urlpatterns as tf_urls
 
 from shop.views.health import health_check
 from shop.views.payments import payment_webhook
@@ -22,6 +23,8 @@ urlpatterns = [
     # auth-flows via Djoser
     path("api/auth/", include("djoser.urls")),
     path("api/auth/", include("djoser.urls.jwt")),
+    # two-factor authentication
+    path("api/account/", include(tf_urls)),
     # shop and user-app
     path("api/shop/", include(("shop.urls"), namespace="shop")),
     # payment webhook
