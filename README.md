@@ -164,4 +164,88 @@ Celery and Celery Beat run in separate containers and process tasks using Redis 
 
 ---
 
+### Two-Factor Authentication (2FA)
+
+This API supports optional Time-based One-Time Password (TOTP) 2FA on top of JWT auth.
+
+1. **Login (with 2FA flag)**
+
+POST /api/users/auth/jwt/create/
+
+Body (JSON)
+
+{
+"email": "user@example.com",
+"password": "password"
+}
+
+Response 200
+
+{
+"refresh": "<refresh_token>",
+"access": "<access_token>",
+"has_2fa": true|false
+}
+
+2. **2FA Setup**
+
+GET /api/users/2fa/setup/
+
+Headers:
+
+Authorization: Bearer <access_token>
+
+Response 200
+
+{
+"qr_code": "<SVG or IMG string>",
+"secret": "<Base32 string>"
+}
+
+3. **2FA Verify**
+
+POST /api/users/2fa/verify/
+
+Headers:
+
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+Body:
+
+{ "token": "123456" }
+
+Response:
+
+204 No Content on success
+
+400 Bad Request with
+
+{ "token": "Invalid code" }
+
+or
+
+{ "detail": "No setup in progress" }
+
+4. **2FA Disable**
+
+DELETE /api/users/2fa/
+
+Headers:
+
+Authorization: Bearer <access_token>
+
+Response 204 (no body)
+
+5. **Enforcement on Protected Routes**
+
+For all other endpoints under /api/users/..., if has_2fa was true in your login response, every request must include both:
+
+Authorization: Bearer <access_token>
+X-2FA-Token: <6-digit TOTP code>
+
+Requests missing or presenting an invalid TOTP code will return 401 Unauthorized.
+
+---
+
 _End-to-end demo: code, live backend, interactive docs, and client SDK._

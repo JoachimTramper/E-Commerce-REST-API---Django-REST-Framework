@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}2FA Setup{% endblock %}
+
+{% block content %}
+  <h1>Two-Factor Authentication Setup</h1>
+  <p>Scan the QR code with your authenticator app:</p>
+  <div id="qr-container">Loading…</div>
+  <p>Or use this secret key:</p>
+  <pre id="secret-container">Loading…</pre>
+  <button id="to-verify" style="display:none;">
+    I have scanned the QR code
+  </button>
+
+  <script>
+    // Fetch the QR code and secret from your API
+    fetch("{% url 'users:2fa-setup' %}", {
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('qr-container').innerHTML = data.qr_code;
+      document.getElementById('secret-container').textContent = data.secret;
+      const btn = document.getElementById('to-verify');
+      btn.style.display = 'inline-block';
+      btn.addEventListener('click', () => {
+        window.location.href = "{% url 'users:2fa-verify-page' %}";
+      });
+    })
+    .catch(error => {
+      document.getElementById('qr-container').textContent = 'Error loading QR code.';
+      console.error(error);
+    });
+  </script>
+{% endblock %}

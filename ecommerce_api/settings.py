@@ -83,6 +83,10 @@ INSTALLED_APPS = [
     "silk",
     "django_celery_beat",
     "simple_history",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "two_factor",
+    "two_factor.plugins.phonenumber",
 ]
 
 MIDDLEWARE = [
@@ -93,6 +97,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -180,6 +185,7 @@ AUTH_USER_MODEL = "users.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "users.authentication.TwoFactorJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
@@ -213,6 +219,10 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# 2fa
+LOGIN_URL = "two_factor:login"
+LOGIN_REDIRECT_URL = "/"
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "ECOMMERCE-API",
