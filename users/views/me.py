@@ -1,8 +1,9 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions
 from rest_framework.exceptions import NotFound
 
 from users.models import Address, CustomerProfile
-from users.serializers import AddressSerializer, UserProfileSerializer
+from users.serializers import AddressSerializer, UserProfileSerializer, UserSerializer
 
 
 class MeProfileView(generics.RetrieveUpdateAPIView):
@@ -19,6 +20,8 @@ class MeProfileView(generics.RetrieveUpdateAPIView):
 class MeAddressListCreateView(generics.ListCreateAPIView):
     serializer_class = AddressSerializer
     permission_classes = [permissions.IsAuthenticated]
+    # Spectacular does not support empty queryset
+    queryset = Address.objects.none()
 
     def get_queryset(self):
         return Address.objects.filter(profile__user=self.request.user).order_by("id")
@@ -28,7 +31,9 @@ class MeAddressListCreateView(generics.ListCreateAPIView):
         serializer.save(profile=profile)
 
 
+@extend_schema(request=None, responses={204: None})
 class MeDeleteView(generics.DestroyAPIView):
+    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -38,3 +43,29 @@ class MeDeleteView(generics.DestroyAPIView):
         # soft delete
         instance.is_active = False
         instance.save()
+
+
+class MeAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Authenticated user to GET, PATCH or DELETE their own address.
+    """
+
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_url_kwarg = "pk"
+
+    def get_queryset(self):
+        # Filter addresses to only those owned by the requesting user
+        return Address.objects.filter(profile__user=self.request.user)
+
+    @extend_schema(responses={200: AddressSerializer})
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(request=AddressSerializer, responses={200: AddressSerializer})
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+    @extend_schema(request=None, responses={204: None})
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)

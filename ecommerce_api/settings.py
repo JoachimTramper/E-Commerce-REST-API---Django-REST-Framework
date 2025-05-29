@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "simple_history",
     "django_otp",
     "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
     "two_factor",
     "two_factor.plugins.phonenumber",
 ]
@@ -241,6 +242,7 @@ SPECTACULAR_SETTINGS = {
     ],
     "tagsSorter": "alpha",
     "operationsSorter": "alpha",
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 CORS_ALLOW_ALL_ORIGINS = True

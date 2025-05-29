@@ -1,4 +1,5 @@
 from django.conf import settings
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -6,9 +7,13 @@ from rest_framework.response import Response
 from shop.models import Order
 
 
+@extend_schema(
+    request=None,
+    responses={200: OpenApiResponse(description="Webhook received", response=None)},
+)
 @api_view(["POST"])
 def payment_webhook(request):
-    # 🔒 Simple header key check
+    # Simple header key check
     secret_key = request.headers.get("X-Webhook-Key")
     if secret_key != settings.WEBHOOK_SECRET_KEY:
         return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
