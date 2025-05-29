@@ -10,14 +10,14 @@ class TwoFactorJWTAuthentication(JWTAuthentication):
     """
 
     def authenticate(self, request):
-        # 1) First, do the normal JWT auth
+        # Normal JWT authentication first
         user_auth_tuple = super().authenticate(request)
         if user_auth_tuple is None:
             return None
 
         user, validated_token = user_auth_tuple
 
-        # 2) If user has confirmed 2FA devices, enforce TOTP
+        # If user has confirmed 2FA devices, enforce TOTP
         if TOTPDevice.objects.filter(user=user, confirmed=True).exists():
             token = request.headers.get("X-2FA-Token")
             if not token:

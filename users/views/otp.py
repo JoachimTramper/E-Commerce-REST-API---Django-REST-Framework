@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlparse
 import qrcode
 import qrcode.image.svg
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import generics, permissions, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
@@ -23,6 +24,16 @@ class TOTPSetupView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TOTPSetupSerializer
 
+    @extend_schema(
+        operation_id="2fa_setup",
+        description="Generate a new TOTP device and return QR code + secret",
+        responses={
+            200: OpenApiExample(
+                "Setup response",
+                value={"qr_code": "<svg…>", "secret": "JBSWY3DPEHPK3PXP"},
+            )
+        },
+    )
     def get(self, request):
         # delete old, unconfirmed devices
         request.user.totpdevice_set.filter(confirmed=False).delete()
@@ -49,6 +60,15 @@ class TOTPVerifyView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TOTPVerifySerializer
 
+    @extend_schema(
+        operation_id="2fa_verify",
+        description="Verify the TOTP code and confirm the device",
+        request=OpenApiExample("Verify request", value={"token": "123456"}),
+        responses={
+            204: None,
+            400: OpenApiExample("Invalid code", value={"token": "Invalid code"}),
+        },
+    )
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,6 +93,11 @@ class TOTPDisableView(generics.DestroyAPIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(
+        operation_id="2fa_disable",
+        description="Disable all TOTP devices for the user",
+        responses={204: None},
+    )
     def delete(self, request, *args, **kwargs):
         request.user.totpdevice_set.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -86,6 +111,23 @@ class CustomTokenObtainPairView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="login",
+        description="Login with email+password, returns JWT + has_2fa flag",
+        request=OpenApiExample(
+            "Login request", value={"email": "foo@bar.com", "password": "yourpass"}
+        ),
+        responses={
+            200: OpenApiExample(
+                "Login response",
+                value={"refresh": "...", "access": "...", "has_2fa": True},
+            ),
+            401: OpenApiExample(
+                "Invalid credentials",
+                value={"detail": "No active account found with the given credentials"},
+            ),
+        },
+    )
     def post(self, request):
         serializer = EmailTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

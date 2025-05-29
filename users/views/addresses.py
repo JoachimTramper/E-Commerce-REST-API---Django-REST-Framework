@@ -1,23 +1,53 @@
+from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import permissions, viewsets
-from rest_framework.exceptions import NotFound
 
-from users.models import Address, CustomerProfile
-from users.serializers import AddressSerializer
+from shop.pagination import FlexiblePageNumberPagination
+from users.models import Address
+from users.serializers import AddressSerializer, AdminAddressSerializer
 
 
+@extend_schema(
+    tags=["users"],
+    examples=[
+        OpenApiExample(
+            "Create address",
+            value={
+                "label": "Home",
+                "street": "Main St",
+                "number": "123",
+                "zipcode": "12345",
+                "city": "Amsterdam",
+                "country": "NL",
+                "is_billing": True,
+                "is_shipping": False,
+            },
+            request_only=True,
+        ),
+        OpenApiExample(
+            "Address response",
+            value={
+                "id": 1,
+                "label": "Home",
+                "street": "Main St",
+                "number": "123",
+                "zipcode": "12345",
+                "city": "Amsterdam",
+                "country": "NL",
+                "is_billing": True,
+                "is_shipping": False,
+            },
+            response_only=True,
+            status_codes=["200", "201"],
+        ),
+    ],
+)
 class AddressViewSet(viewsets.ModelViewSet):
-    serializer_class = AddressSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = Address.objects.all().order_by("id")
+    serializer_class = AdminAddressSerializer
+    permission_classes = [permissions.IsAdminUser]
+    pagination_class = FlexiblePageNumberPagination
 
-    def get_queryset(self):
-        return Address.objects.filter(profile__user=self.request.user).order_by("id")
-
-    def perform_create(self, serializer):
-        profile, _ = CustomerProfile.objects.get_or_create(user=self.request.user)
-        serializer.save(profile=profile)
-
-    def get_object(self):
-        obj = super().get_object()
-        if obj.profile.user != self.request.user:
-            raise NotFound("Address not found.")
-        return obj
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            return AdminAddressSerializer
+        return AddressSerializer

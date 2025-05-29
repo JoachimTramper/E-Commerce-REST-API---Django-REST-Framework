@@ -2,229 +2,929 @@ openapi: 3.0.3
 info:
   title: ECOMMERCE-API
   version: 1.0.0
-  description:
-    "REST API for managing products, orders, order items, user accounts
-    and authentication "
+  description: 'REST API for managing products, orders, order items, user accounts
+    and authentication '
   contact:
     name: Joachim Tramper
     email: joachimtramper@gmail.com
     url: https://github.com/joachimtramper
 paths:
+  /auth/jwt/create/:
+    post:
+      operationId: auth_jwt_create_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /auth/jwt/refresh/:
+    post:
+      operationId: auth_jwt_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /auth/jwt/verify/:
+    post:
+      operationId: auth_jwt_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /auth/users/:
+    get:
+      operationId: auth_users_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAppUserList'
+          description: ''
+    post:
+      operationId: auth_users_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreatePasswordRetypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreatePasswordRetypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserCreatePasswordRetypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreatePasswordRetype'
+          description: ''
+  /auth/users/{id}/:
+    get:
+      operationId: auth_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+    put:
+      operationId: auth_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+    patch:
+      operationId: auth_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+    delete:
+      operationId: auth_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /auth/users/activation/:
+    post:
+      operationId: auth_users_activation_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ActivationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ActivationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activation'
+          description: ''
+  /auth/users/me/:
+    get:
+      operationId: auth_users_me_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: auth_users_me_update
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: auth_users_me_partial_update
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: auth_users_me_destroy
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /auth/users/resend_activation/:
+    post:
+      operationId: auth_users_resend_activation_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /auth/users/reset_email/:
+    post:
+      operationId: auth_users_reset_email_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /auth/users/reset_email_confirm/:
+    post:
+      operationId: auth_users_reset_email_confirm_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsernameResetConfirm'
+          description: ''
+  /auth/users/reset_password/:
+    post:
+      operationId: auth_users_reset_password_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailResetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /auth/users/reset_password_confirm/:
+    post:
+      operationId: auth_users_reset_password_confirm_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetConfirm'
+          description: ''
+  /auth/users/set_email/:
+    post:
+      operationId: auth_users_set_email_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetUsernameRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetUsernameRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetUsernameRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetUsername'
+          description: ''
+  /auth/users/set_password/:
+    post:
+      operationId: auth_users_set_password_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetPassword'
+          description: ''
+  /health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: OK
+  /me/addresses/:
+    get:
+      operationId: me_addresses_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAddressList'
+          description: ''
+    post:
+      operationId: me_addresses_create
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /me/delete/:
+    delete:
+      operationId: me_delete_destroy
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /me/profile/:
+    get:
+      operationId: me_profile_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    put:
+      operationId: me_profile_update
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: me_profile_partial_update
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
   /shop/cart/:
     get:
       operationId: shop_cart_list
       description: Retrieve the current user's pending cart
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Cart"
+                  $ref: '#/components/schemas/Cart'
               examples:
                 GetCartEmpty:
                   value:
-                    - items: []
-                      total_amount: "0.00"
+                  - items: []
+                    total_amount: '0.00'
                   summary: Lege cart response
                 GetCartWithItems:
                   value:
-                    - order_id: 123e4567-e89b-12d3-a456-426614174000
-                      order_number: 7
-                      created_at: "2025-05-11T12:34:56.789Z"
-                      status: pending
-                      items:
-                        - id: 1
-                          order: 123e4567-e89b-12d3-a456-426614174000
-                          product: 1
-                          quantity: 2
-                          item_subtotal: "20.00"
-                        - id: 2
-                          order: 123e4567-e89b-12d3-a456-426614174000
-                          product: 2
-                          quantity: 1
-                          item_subtotal: "5.00"
-                      total_amount: "25.00"
+                  - order_id: 123e4567-e89b-12d3-a456-426614174000
+                    order_number: 7
+                    created_at: '2025-05-11T12:34:56.789Z'
+                    status: pending
+                    items:
+                    - id: 1
+                      order: 123e4567-e89b-12d3-a456-426614174000
+                      product: 1
+                      quantity: 2
+                      item_subtotal: '20.00'
+                    - id: 2
+                      order: 123e4567-e89b-12d3-a456-426614174000
+                      product: 2
+                      quantity: 1
+                      item_subtotal: '5.00'
+                    total_amount: '25.00'
                   summary: Response van een cart met 2 items
-          description: ""
-        "404":
+          description: ''
+        '404':
           description: No pending cart
+  /shop/cart/checkout/:
+    post:
+      operationId: cartCheckout
+      description: Set the pending cart to CONFIRMED; subsequent GET /cart/ returns
+        404
+      tags:
+      - shop
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Cart checked out
   /shop/cart/items/:
     get:
       operationId: cartItemsList
       parameters:
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedOrderItemListList"
-          description: ""
+                $ref: '#/components/schemas/PaginatedOrderItemListList'
+          description: ''
     post:
       operationId: cartItemCreate
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
             examples:
               AddItemToCart:
                 value:
                   product: 1
                   quantity: 2
-                summary: "Voeg 2 stuks van product #1 toe"
+                summary: 'Voeg 2 stuks van product #1 toe'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Cart"
-          description: ""
+                $ref: '#/components/schemas/Cart'
+          description: ''
   /shop/cart/items/{id}/:
     get:
       operationId: cartItemsRetrieve
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
-          description: ""
+                $ref: '#/components/schemas/OrderItemDetail'
+          description: ''
     put:
-      operationId: shop_cart_items_update
+      operationId: cartItemUpdate
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemCreateUpdate"
-          description: ""
+                $ref: '#/components/schemas/OrderItemDetail'
+          description: ''
     patch:
-      operationId: shop_cart_items_partial_update
+      operationId: cartItemPartialUpdate
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemCreateUpdate"
-          description: ""
+                $ref: '#/components/schemas/OrderItemDetail'
+          description: ''
     delete:
-      operationId: shop_cart_items_destroy
+      operationId: cartItemDelete
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "204":
-          description: No response body
+        '204':
+          description: Cart item deleted
   /shop/order-items/:
     get:
       operationId: shop_order_items_list
@@ -236,74 +936,74 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       parameters:
-        - in: query
-          name: order
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: order__status
-          schema:
-            type: string
-            enum:
-              - Cancelled
-              - Confirmed
-              - Delivered
-              - Pending
-              - Shipped
-          description: |-
-            * `Pending` - Pending
-            * `Confirmed` - Confirmed
-            * `Shipped` - Shipped
-            * `Delivered` - Delivered
-            * `Cancelled` - Cancelled
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: page_size
-          required: false
-          in: query
-          description: Number of results to return per page.
-          schema:
-            type: integer
-        - in: query
-          name: product
-          schema:
-            type: number
-        - in: query
-          name: quantity_max
-          schema:
-            type: integer
-        - in: query
-          name: quantity_min
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - in: query
+        name: order
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: order__status
+        schema:
+          type: string
+          enum:
+          - Cancelled
+          - Confirmed
+          - Delivered
+          - Pending
+          - Shipped
+        description: |-
+          * `Pending` - Pending
+          * `Confirmed` - Confirmed
+          * `Shipped` - Shipped
+          * `Delivered` - Delivered
+          * `Cancelled` - Cancelled
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: number
+      - in: query
+        name: quantity_max
+        schema:
+          type: integer
+      - in: query
+        name: quantity_min
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedOrderItemDetailList"
+                $ref: '#/components/schemas/PaginatedOrderItemDetailList'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -311,19 +1011,19 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - id: 5
-                        order: 123e4567-e89b-12d3-a456-426655440000
-                        product: 2
-                        product_name: Socks
-                        quantity: 3
-                        item_subtotal: "15.00"
+                    - id: 5
+                      order: 123e4567-e89b-12d3-a456-426655440000
+                      product: 2
+                      product_name: Socks
+                      quantity: 3
+                      item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedOrderItemDetailList"
+                $ref: '#/components/schemas/PaginatedOrderItemDetailList'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -331,17 +1031,17 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - id: 5
-                        order: 123e4567-e89b-12d3-a456-426655440000
-                        product: 2
-                        product_name: Socks
-                        quantity: 3
-                        item_subtotal: "15.00"
+                    - id: 5
+                      order: 123e4567-e89b-12d3-a456-426655440000
+                      product: 2
+                      product_name: Socks
+                      quantity: 3
+                      item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     post:
       operationId: shop_order_items_create
@@ -353,12 +1053,12 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
             examples:
               CreateOrderItem:
                 value:
@@ -367,20 +1067,20 @@ paths:
                 summary: Payload to add an item to an existing order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -389,14 +1089,14 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -405,12 +1105,12 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /shop/order-items/{id}/:
     get:
@@ -423,23 +1123,23 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -448,14 +1148,14 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -464,12 +1164,12 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     put:
       operationId: shop_order_items_update
@@ -481,19 +1181,19 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
             examples:
               CreateOrderItem:
                 value:
@@ -502,20 +1202,20 @@ paths:
                 summary: Payload to add an item to an existing order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderItemCreateUpdate"
+              $ref: '#/components/schemas/OrderItemCreateUpdateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -524,14 +1224,14 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -540,12 +1240,12 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     patch:
       operationId: shop_order_items_partial_update
@@ -557,19 +1257,19 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
             examples:
               CreateOrderItem:
                 value:
@@ -578,19 +1278,19 @@ paths:
                 summary: Payload to add an item to an existing order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedOrderItemCreateUpdate"
+              $ref: '#/components/schemas/PatchedOrderItemCreateUpdateRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -599,14 +1299,14 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -615,12 +1315,12 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     delete:
       operationId: shop_order_items_destroy
@@ -632,23 +1332,23 @@ paths:
             • update/partial_update: only on items whose order status == PENDING.
             • delete: only on items whose order status == PENDING.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this order item.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this order item.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -657,14 +1357,14 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Retrieve order-item
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderItemDetail"
+                $ref: '#/components/schemas/OrderItemDetail'
               examples:
                 GetOrder-itemResponse:
                   value:
@@ -673,12 +1373,12 @@ paths:
                     product: 2
                     product_name: Socks
                     quantity: 3
-                    item_subtotal: "15.00"
+                    item_subtotal: '15.00'
                   summary: Example response for order-item
           description: Create order-item
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /shop/orders/:
     get:
@@ -691,63 +1391,63 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       parameters:
-        - in: query
-          name: created_after
-          schema:
-            type: string
-            format: date-time
-        - in: query
-          name: created_before
-          schema:
-            type: string
-            format: date-time
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: page_size
-          required: false
-          in: query
-          description: Number of results to return per page.
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
-        - in: query
-          name: status
-          schema:
-            type: string
-        - in: query
-          name: total_max
-          schema:
-            type: number
-        - in: query
-          name: total_min
-          schema:
-            type: number
+      - in: query
+        name: created_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: total_max
+        schema:
+          type: number
+      - in: query
+        name: total_min
+        schema:
+          type: number
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedOrderDetailList"
+                $ref: '#/components/schemas/PaginatedOrderDetailList'
               examples:
                 GetOrderResponse:
                   value:
@@ -755,30 +1455,30 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - order_id: 123e4567-e89b-12d3-a456-426655440000
-                        status: pending
-                        total_amount: "44.98"
-                        created_at: "2025-05-10T14:00:00Z"
-                        items:
-                          - id: 1
-                            product_id: 1
-                            product_name: T-shirt
-                            quantity: 2
-                            price: "19.99"
-                            item_subtotal: "39.98"
-                          - id: 2
-                            product_id: 2
-                            product_name: Socks
-                            quantity: 1
-                            price: "5.00"
-                            item_subtotal: "5.00"
+                    - order_id: 123e4567-e89b-12d3-a456-426655440000
+                      status: pending
+                      total_amount: '44.98'
+                      created_at: '2025-05-10T14:00:00Z'
+                      items:
+                      - id: 1
+                        product_id: 1
+                        product_name: T-shirt
+                        quantity: 2
+                        price: '19.99'
+                        item_subtotal: '39.98'
+                      - id: 2
+                        product_id: 2
+                        product_name: Socks
+                        quantity: 1
+                        price: '5.00'
+                        item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedOrderCreateList"
+                $ref: '#/components/schemas/PaginatedOrderCreateList'
               examples:
                 GetOrderResponse:
                   value:
@@ -786,28 +1486,28 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - order_id: 123e4567-e89b-12d3-a456-426655440000
-                        status: pending
-                        total_amount: "44.98"
-                        created_at: "2025-05-10T14:00:00Z"
-                        items:
-                          - id: 1
-                            product_id: 1
-                            product_name: T-shirt
-                            quantity: 2
-                            price: "19.99"
-                            item_subtotal: "39.98"
-                          - id: 2
-                            product_id: 2
-                            product_name: Socks
-                            quantity: 1
-                            price: "5.00"
-                            item_subtotal: "5.00"
+                    - order_id: 123e4567-e89b-12d3-a456-426655440000
+                      status: pending
+                      total_amount: '44.98'
+                      created_at: '2025-05-10T14:00:00Z'
+                      items:
+                      - id: 1
+                        product_id: 1
+                        product_name: T-shirt
+                        quantity: 2
+                        price: '19.99'
+                        item_subtotal: '39.98'
+                      - id: 2
+                        product_id: 2
+                        product_name: Socks
+                        quantity: 1
+                        price: '5.00'
+                        item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     post:
       operationId: shop_orders_create
@@ -819,91 +1519,91 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
             examples:
               CreateOrder:
                 value:
                   items:
-                    - product_id: 1
-                      quantity: 2
-                      price: "19.99"
-                    - product_id: 2
-                      quantity: 1
-                      price: "5.00"
+                  - product_id: 1
+                    quantity: 2
+                    price: '19.99'
+                  - product_id: 2
+                    quantity: 1
+                    price: '5.00'
                 summary: Payload to create a new order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderDetail"
+                $ref: '#/components/schemas/OrderDetail'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderCreate"
+                $ref: '#/components/schemas/OrderCreate'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /shop/orders/{order_id}/:
     get:
@@ -916,76 +1616,76 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       parameters:
-        - in: path
-          name: order_id
-          schema:
-            type: string
-            format: uuid
-          description: A UUID string identifying this order.
-          required: true
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderDetail"
+                $ref: '#/components/schemas/OrderDetail'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderCreate"
+                $ref: '#/components/schemas/OrderCreate'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     put:
       operationId: shop_orders_update
@@ -997,99 +1697,99 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       parameters:
-        - in: path
-          name: order_id
-          schema:
-            type: string
-            format: uuid
-          description: A UUID string identifying this order.
-          required: true
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
             examples:
               CreateOrder:
                 value:
                   items:
-                    - product_id: 1
-                      quantity: 2
-                      price: "19.99"
-                    - product_id: 2
-                      quantity: 1
-                      price: "5.00"
+                  - product_id: 1
+                    quantity: 2
+                    price: '19.99'
+                  - product_id: 2
+                    quantity: 1
+                    price: '5.00'
                 summary: Payload to create a new order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/OrderCreate"
+              $ref: '#/components/schemas/OrderCreateRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderDetail"
+                $ref: '#/components/schemas/OrderDetail'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderCreate"
+                $ref: '#/components/schemas/OrderCreate'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     patch:
       operationId: shop_orders_partial_update
@@ -1101,98 +1801,98 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       parameters:
-        - in: path
-          name: order_id
-          schema:
-            type: string
-            format: uuid
-          description: A UUID string identifying this order.
-          required: true
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedOrderCreate"
+              $ref: '#/components/schemas/PatchedOrderCreateRequest'
             examples:
               CreateOrder:
                 value:
                   items:
-                    - product_id: 1
-                      quantity: 2
-                      price: "19.99"
-                    - product_id: 2
-                      quantity: 1
-                      price: "5.00"
+                  - product_id: 1
+                    quantity: 2
+                    price: '19.99'
+                  - product_id: 2
+                    quantity: 1
+                    price: '5.00'
                 summary: Payload to create a new order
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedOrderCreate"
+              $ref: '#/components/schemas/PatchedOrderCreateRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedOrderCreate"
+              $ref: '#/components/schemas/PatchedOrderCreateRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderDetail"
+                $ref: '#/components/schemas/OrderDetail'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderCreate"
+                $ref: '#/components/schemas/OrderCreate'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     delete:
       operationId: shop_orders_destroy
@@ -1204,239 +1904,133 @@ paths:
             • update/partial_update: only on their own orders when status == PENDING.
             • delete: only on their own orders when status == PENDING.
       parameters:
-        - in: path
-          name: order_id
-          schema:
-            type: string
-            format: uuid
-          description: A UUID string identifying this order.
-          required: true
-      tags:
-        - shop
-      security:
-        - jwtAuth: []
-        - cookieAuth: []
-        - {}
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderDetail"
-              examples:
-                GetOrderResponse:
-                  value:
-                    order_id: 123e4567-e89b-12d3-a456-426655440000
-                    status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
-                    items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
-                  summary: Example response for retrieving an order
-          description: Retrieve order
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderCreate"
-              examples:
-                GetOrderResponse:
-                  value:
-                    order_id: 123e4567-e89b-12d3-a456-426655440000
-                    status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
-                    items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
-                  summary: Example response for retrieving an order
-          description: Create order
-        "400":
-          description: Validation error
-        "404":
-          description: Not found
-  /shop/orders/{order_id}/checkout/:
-    post:
-      operationId: shop_orders_checkout_create
-      description: |-
-        - Admin users: full CRUD on all orders.
-        - Non-staff users:
-            • list/retrieve: only their own orders.
-            • create: may create orders for themselves.
-            • update/partial_update: only on their own orders when status == PENDING.
-            • delete: only on their own orders when status == PENDING.
-      parameters:
-        - in: path
-          name: order_id
-          schema:
-            type: string
-            format: uuid
-          description: A UUID string identifying this order.
-          required: true
-      tags:
-        - shop
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OrderCreate"
-            examples:
-              CreateOrder:
-                value:
-                  items:
-                    - product_id: 1
-                      quantity: 2
-                      price: "19.99"
-                    - product_id: 2
-                      quantity: 1
-                      price: "5.00"
-                summary: Payload to create a new order
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/OrderCreate"
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/OrderCreate"
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this order.
         required: true
+      tags:
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderDetail"
+                $ref: '#/components/schemas/OrderDetail'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Retrieve order
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderCreate"
+                $ref: '#/components/schemas/OrderCreate'
               examples:
                 GetOrderResponse:
                   value:
                     order_id: 123e4567-e89b-12d3-a456-426655440000
                     status: pending
-                    total_amount: "44.98"
-                    created_at: "2025-05-10T14:00:00Z"
+                    total_amount: '44.98'
+                    created_at: '2025-05-10T14:00:00Z'
                     items:
-                      - id: 1
-                        product_id: 1
-                        product_name: T-shirt
-                        quantity: 2
-                        price: "19.99"
-                        item_subtotal: "39.98"
-                      - id: 2
-                        product_id: 2
-                        product_name: Socks
-                        quantity: 1
-                        price: "5.00"
-                        item_subtotal: "5.00"
+                    - id: 1
+                      product_id: 1
+                      product_name: T-shirt
+                      quantity: 2
+                      price: '19.99'
+                      item_subtotal: '39.98'
+                    - id: 2
+                      product_id: 2
+                      product_name: Socks
+                      quantity: 1
+                      price: '5.00'
+                      item_subtotal: '5.00'
                   summary: Example response for retrieving an order
           description: Create order
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /shop/products/:
     get:
       operationId: shop_products_list
       parameters:
-        - in: query
-          name: in_stock
-          schema:
-            type: boolean
-        - in: query
-          name: name
-          schema:
-            type: string
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: page_size
-          required: false
-          in: query
-          description: Number of results to return per page.
-          schema:
-            type: integer
-        - in: query
-          name: price_max
-          schema:
-            type: number
-        - in: query
-          name: price_min
-          schema:
-            type: number
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - in: query
+        name: in_stock
+        schema:
+          type: boolean
+      - in: query
+        name: name
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: price_max
+        schema:
+          type: number
+      - in: query
+        name: price_min
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
-        - {}
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedProductList"
+                $ref: '#/components/schemas/PaginatedProductList'
               examples:
                 GetProductResponse:
                   value:
@@ -1444,19 +2038,19 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - id: 1
-                        name: T-shirt
-                        price: "19.99"
-                        stock: 100
-                        description: Soft cotton T-shirt
-                        created_at: "2025-05-01T12:34:56Z"
+                    - id: 1
+                      name: T-shirt
+                      price: '19.99'
+                      stock: 100
+                      description: Soft cotton T-shirt
+                      created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedProductList"
+                $ref: '#/components/schemas/PaginatedProductList'
               examples:
                 GetProductResponse:
                   value:
@@ -1464,326 +2058,326 @@ paths:
                     next: http://api.example.org/accounts/?page=4
                     previous: http://api.example.org/accounts/?page=2
                     results:
-                      - id: 1
-                        name: T-shirt
-                        price: "19.99"
-                        stock: 100
-                        description: Soft cotton T-shirt
-                        created_at: "2025-05-01T12:34:56Z"
+                    - id: 1
+                      name: T-shirt
+                      price: '19.99'
+                      stock: 100
+                      description: Soft cotton T-shirt
+                      created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     post:
       operationId: shop_products_create
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
             examples:
               CreateT-shirt:
                 value:
                   name: T-shirt
-                  price: "19.99"
+                  price: '19.99'
                   stock: 100
                   description: Soft cotton T-shirt
                 summary: Payload to create a new T-shirt
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /shop/products/{id}/:
     get:
       operationId: shop_products_retrieve
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this product.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
-        - {}
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     put:
       operationId: shop_products_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this product.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
             examples:
               CreateT-shirt:
                 value:
                   name: T-shirt
-                  price: "19.99"
+                  price: '19.99'
                   stock: 100
                   description: Soft cotton T-shirt
                 summary: Payload to create a new T-shirt
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/ProductRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     patch:
       operationId: shop_products_partial_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this product.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
       tags:
-        - shop
+      - shop
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedProduct"
+              $ref: '#/components/schemas/PatchedProductRequest'
             examples:
               CreateT-shirt:
                 value:
                   name: T-shirt
-                  price: "19.99"
+                  price: '19.99'
                   stock: 100
                   description: Soft cotton T-shirt
                 summary: Payload to create a new T-shirt
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedProduct"
+              $ref: '#/components/schemas/PatchedProductRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedProduct"
+              $ref: '#/components/schemas/PatchedProductRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
     delete:
       operationId: shop_products_destroy
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this product.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
       tags:
-        - shop
+      - shop
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Retrieve product
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: '#/components/schemas/Product'
               examples:
                 GetProductResponse:
                   value:
                     id: 1
                     name: T-shirt
-                    price: "19.99"
+                    price: '19.99'
                     stock: 100
                     description: Soft cotton T-shirt
-                    created_at: "2025-05-01T12:34:56Z"
+                    created_at: '2025-05-01T12:34:56Z'
                   summary: Example response body
           description: Create product
-        "400":
+        '400':
           description: Validation error
-        "404":
+        '404':
           description: Not found
   /token/:
     post:
@@ -1792,26 +2386,26 @@ paths:
         Takes a set of user credentials and returns an access and refresh JSON web
         token pair to prove the authentication of those credentials.
       tags:
-        - token
+      - token
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TokenObtainPair"
+              $ref: '#/components/schemas/TokenObtainPairRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/TokenObtainPair"
+              $ref: '#/components/schemas/TokenObtainPairRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/TokenObtainPair"
+              $ref: '#/components/schemas/TokenObtainPairRequest'
         required: true
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenObtainPair"
-          description: ""
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
   /token/refresh/:
     post:
       operationId: token_refresh_create
@@ -1819,520 +2413,656 @@ paths:
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
-        - token
+      - token
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TokenRefresh"
+              $ref: '#/components/schemas/TokenRefreshRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/TokenRefresh"
+              $ref: '#/components/schemas/TokenRefreshRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/TokenRefresh"
+              $ref: '#/components/schemas/TokenRefreshRequest'
         required: true
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenRefresh"
-          description: ""
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /users/2fa/:
+    delete:
+      operationId: 2fa_disable
+      description: Disable all TOTP devices for the user
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /users/2fa/setup/:
+    get:
+      operationId: 2fa_setup
+      description: Generate a new TOTP device and return QR code + secret
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /users/2fa/verify/:
+    post:
+      operationId: 2fa_verify
+      description: Verify the TOTP code and confirm the device
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
   /users/addresses/:
     get:
       operationId: users_addresses_list
       parameters:
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - users
+      - Addresses
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedAddressList"
-          description: ""
+                $ref: '#/components/schemas/PaginatedAddressList'
+              examples:
+                AddressResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - id: 1
+                      label: Home
+                      street: Main St
+                      number: '123'
+                      zipcode: '12345'
+                      city: Amsterdam
+                      country: NL
+                      is_billing: true
+                      is_shipping: false
+                  summary: Address response
+          description: ''
     post:
       operationId: users_addresses_create
       tags:
-        - users
+      - Addresses
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
+            examples:
+              CreateAddress:
+                value:
+                  label: Home
+                  street: Main St
+                  number: '123'
+                  zipcode: '12345'
+                  city: Amsterdam
+                  country: NL
+                  is_billing: true
+                  is_shipping: false
+                summary: Create address
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Address"
-          description: ""
+                $ref: '#/components/schemas/Address'
+              examples:
+                AddressResponse:
+                  value:
+                    id: 1
+                    label: Home
+                    street: Main St
+                    number: '123'
+                    zipcode: '12345'
+                    city: Amsterdam
+                    country: NL
+                    is_billing: true
+                    is_shipping: false
+                  summary: Address response
+          description: ''
   /users/addresses/{id}/:
     get:
       operationId: users_addresses_retrieve
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this Address.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
       tags:
-        - users
+      - Addresses
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Address"
-          description: ""
+                $ref: '#/components/schemas/Address'
+              examples:
+                AddressResponse:
+                  value:
+                    id: 1
+                    label: Home
+                    street: Main St
+                    number: '123'
+                    zipcode: '12345'
+                    city: Amsterdam
+                    country: NL
+                    is_billing: true
+                    is_shipping: false
+                  summary: Address response
+          description: ''
     put:
       operationId: users_addresses_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this Address.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
       tags:
-        - users
+      - Addresses
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
+            examples:
+              CreateAddress:
+                value:
+                  label: Home
+                  street: Main St
+                  number: '123'
+                  zipcode: '12345'
+                  city: Amsterdam
+                  country: NL
+                  is_billing: true
+                  is_shipping: false
+                summary: Create address
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/Address"
+              $ref: '#/components/schemas/AddressRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Address"
-          description: ""
+                $ref: '#/components/schemas/Address'
+              examples:
+                AddressResponse:
+                  value:
+                    id: 1
+                    label: Home
+                    street: Main St
+                    number: '123'
+                    zipcode: '12345'
+                    city: Amsterdam
+                    country: NL
+                    is_billing: true
+                    is_shipping: false
+                  summary: Address response
+          description: ''
     patch:
       operationId: users_addresses_partial_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this Address.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
       tags:
-        - users
+      - Addresses
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedAddress"
+              $ref: '#/components/schemas/PatchedAddressRequest'
+            examples:
+              CreateAddress:
+                value:
+                  label: Home
+                  street: Main St
+                  number: '123'
+                  zipcode: '12345'
+                  city: Amsterdam
+                  country: NL
+                  is_billing: true
+                  is_shipping: false
+                summary: Create address
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedAddress"
+              $ref: '#/components/schemas/PatchedAddressRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedAddress"
+              $ref: '#/components/schemas/PatchedAddressRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Address"
-          description: ""
+                $ref: '#/components/schemas/Address'
+              examples:
+                AddressResponse:
+                  value:
+                    id: 1
+                    label: Home
+                    street: Main St
+                    number: '123'
+                    zipcode: '12345'
+                    city: Amsterdam
+                    country: NL
+                    is_billing: true
+                    is_shipping: false
+                  summary: Address response
+          description: ''
     delete:
       operationId: users_addresses_destroy
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this Address.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
       tags:
-        - users
+      - Addresses
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "204":
+        '204':
           description: No response body
+  /users/auth/jwt/create/:
+    post:
+      operationId: login
+      description: Login with email+password, returns JWT + has_2fa flag
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
   /users/profiles/:
     get:
       operationId: users_profiles_list
       parameters:
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - users
+      - users
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedCustomerProfileList"
-          description: ""
+                $ref: '#/components/schemas/PaginatedAdminProfileList'
+          description: ''
     post:
       operationId: users_profiles_create
       tags:
-        - users
+      - users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "201":
+        '201':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerProfile"
-          description: ""
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
   /users/profiles/{id}/:
     get:
       operationId: users_profiles_retrieve
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this customer profile.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer profile.
+        required: true
       tags:
-        - users
+      - users
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerProfile"
-          description: ""
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
     put:
       operationId: users_profiles_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this customer profile.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer profile.
+        required: true
       tags:
-        - users
+      - users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/CustomerProfile"
+              $ref: '#/components/schemas/AdminProfileRequest'
         required: true
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerProfile"
-          description: ""
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
     patch:
       operationId: users_profiles_partial_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this customer profile.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer profile.
+        required: true
       tags:
-        - users
+      - users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedCustomerProfile"
+              $ref: '#/components/schemas/PatchedAdminProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedCustomerProfile"
+              $ref: '#/components/schemas/PatchedAdminProfileRequest'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedCustomerProfile"
+              $ref: '#/components/schemas/PatchedAdminProfileRequest'
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerProfile"
-          description: ""
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
     delete:
       operationId: users_profiles_destroy
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this customer profile.
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer profile.
+        required: true
       tags:
-        - users
+      - users
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "204":
+        '204':
           description: No response body
   /users/users/:
     get:
       operationId: users_users_list
       parameters:
-        - name: ordering
-          required: false
-          in: query
-          description: Which field to use when ordering the results.
-          schema:
-            type: string
-        - name: page
-          required: false
-          in: query
-          description: A page number within the paginated result set.
-          schema:
-            type: integer
-        - name: search
-          required: false
-          in: query
-          description: A search term.
-          schema:
-            type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       tags:
-        - users
+      - users
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedUserList"
-          description: ""
-    post:
-      operationId: users_users_create
-      tags:
-        - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/User"
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/User"
-        required: true
-      security:
-        - jwtAuth: []
-        - cookieAuth: []
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-          description: ""
+                $ref: '#/components/schemas/PaginatedAppUserList'
+          description: ''
   /users/users/{id}/:
     get:
       operationId: users_users_retrieve
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this user.
-          required: true
-      tags:
-        - users
-      security:
-        - jwtAuth: []
-        - cookieAuth: []
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-          description: ""
-    put:
-      operationId: users_users_update
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this user.
-          required: true
-      tags:
-        - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/User"
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/User"
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
         required: true
+      tags:
+      - users
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-          description: ""
-    patch:
-      operationId: users_users_partial_update
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this user.
-          required: true
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+  /webhooks/payment/:
+    post:
+      operationId: webhooks_payment_create
       tags:
-        - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchedUser"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/PatchedUser"
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/PatchedUser"
+      - webhooks
       security:
-        - jwtAuth: []
-        - cookieAuth: []
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-          description: ""
-    delete:
-      operationId: users_users_destroy
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: A unique integer value identifying this user.
-          required: true
-      tags:
-        - users
-      security:
-        - jwtAuth: []
-        - cookieAuth: []
-      responses:
-        "204":
-          description: No response body
+        '200':
+          description: Webhook received
 components:
   schemas:
+    Activation:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - token
+      - uid
+    ActivationRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - token
+      - uid
     Address:
       type: object
       properties:
@@ -2362,17 +3092,140 @@ components:
           type: boolean
         is_shipping:
           type: boolean
-        profile:
-          type: integer
       required:
-        - city
-        - country
-        - id
-        - label
-        - number
-        - profile
-        - street
-        - zipcode
+      - city
+      - country
+      - id
+      - label
+      - number
+      - street
+      - zipcode
+    AddressRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          description: e.g. 'Home', 'Work'
+          maxLength: 30
+        street:
+          type: string
+          minLength: 1
+          maxLength: 100
+        number:
+          type: string
+          minLength: 1
+          maxLength: 10
+        zipcode:
+          type: string
+          minLength: 1
+          maxLength: 10
+        city:
+          type: string
+          minLength: 1
+          maxLength: 50
+        country:
+          type: string
+          minLength: 1
+          maxLength: 50
+        is_billing:
+          type: boolean
+        is_shipping:
+          type: boolean
+      required:
+      - city
+      - country
+      - label
+      - number
+      - street
+      - zipcode
+    AdminProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        phone_number:
+          type: string
+          maxLength: 20
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - id
+      - user
+    AdminProfileRequest:
+      type: object
+      properties:
+        user:
+          type: integer
+        phone_number:
+          type: string
+          maxLength: 20
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - user
+    AppUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+      required:
+      - email
+      - id
+      - profile
+      - username
+    AppUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - username
     Cart:
       type: object
       properties:
@@ -2387,35 +3240,17 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemDetail"
+            $ref: '#/components/schemas/OrderItemDetail'
           readOnly: true
         total_amount:
           type: number
           format: double
           readOnly: true
       required:
-        - created_at
-        - items
-        - order_id
-        - total_amount
-    CustomerProfile:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        phone_number:
-          type: string
-          maxLength: 20
-        date_of_birth:
-          type: string
-          format: date
-          nullable: true
-        user:
-          type: integer
-      required:
-        - id
-        - user
+      - created_at
+      - items
+      - order_id
+      - total_amount
     OrderCreate:
       type: object
       properties:
@@ -2424,14 +3259,25 @@ components:
           format: uuid
           readOnly: true
         status:
-          $ref: "#/components/schemas/StatusEnum"
+          $ref: '#/components/schemas/StatusEnum'
         items:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemDetail"
+            $ref: '#/components/schemas/OrderItemDetail'
       required:
-        - items
-        - order_id
+      - items
+      - order_id
+    OrderCreateRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDetailRequest'
+      required:
+      - items
     OrderDetail:
       type: object
       properties:
@@ -2448,47 +3294,33 @@ components:
           readOnly: true
         status:
           allOf:
-            - $ref: "#/components/schemas/StatusEnum"
+          - $ref: '#/components/schemas/StatusEnum'
           readOnly: true
         items:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemDetail"
+            $ref: '#/components/schemas/OrderItemDetail'
         total_amount:
           type: number
           format: double
           readOnly: true
       required:
-        - created_at
-        - items
-        - order_id
-        - order_number
-        - status
-        - total_amount
-    OrderItemCreateUpdate:
+      - created_at
+      - items
+      - order_id
+      - order_number
+      - status
+      - total_amount
+    OrderItemCreateUpdateRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        order:
-          type: string
-          format: uuid
-          readOnly: true
         product:
           type: integer
         quantity:
           type: integer
-        item_subtotal:
-          type: number
-          format: double
-          readOnly: true
       required:
-        - id
-        - item_subtotal
-        - order
-        - product
-        - quantity
+      - product
+      - quantity
     OrderItemDetail:
       type: object
       properties:
@@ -2501,11 +3333,8 @@ components:
           readOnly: true
         product:
           allOf:
-            - $ref: "#/components/schemas/Product"
+          - $ref: '#/components/schemas/Product'
           readOnly: true
-        product_id:
-          type: integer
-          writeOnly: true
         quantity:
           type: integer
         item_subtotal:
@@ -2513,12 +3342,22 @@ components:
           format: double
           readOnly: true
       required:
-        - id
-        - item_subtotal
-        - order
-        - product
-        - product_id
-        - quantity
+      - id
+      - item_subtotal
+      - order
+      - product
+      - quantity
+    OrderItemDetailRequest:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          writeOnly: true
+        quantity:
+          type: integer
+      required:
+      - product_id
+      - quantity
     OrderItemList:
       type: object
       properties:
@@ -2550,18 +3389,18 @@ components:
           format: double
           readOnly: true
       required:
-        - id
-        - item_subtotal
-        - order
-        - price
-        - product
-        - product_name
-        - quantity
+      - id
+      - item_subtotal
+      - order
+      - price
+      - product
+      - product_name
+      - quantity
     PaginatedAddressList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2579,12 +3418,12 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/Address"
-    PaginatedCustomerProfileList:
+            $ref: '#/components/schemas/Address'
+    PaginatedAdminProfileList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2602,12 +3441,35 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/CustomerProfile"
+            $ref: '#/components/schemas/AdminProfile'
+    PaginatedAppUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUser'
     PaginatedOrderCreateList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2625,12 +3487,12 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/OrderCreate"
+            $ref: '#/components/schemas/OrderCreate'
     PaginatedOrderDetailList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2648,12 +3510,12 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/OrderDetail"
+            $ref: '#/components/schemas/OrderDetail'
     PaginatedOrderItemDetailList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2671,12 +3533,12 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemDetail"
+            $ref: '#/components/schemas/OrderItemDetail'
     PaginatedOrderItemListList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2694,12 +3556,12 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemList"
+            $ref: '#/components/schemas/OrderItemList'
     PaginatedProductList:
       type: object
       required:
-        - count
-        - results
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -2717,67 +3579,73 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/Product"
-    PaginatedUserList:
+            $ref: '#/components/schemas/Product'
+    PasswordResetConfirm:
       type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+        new_password:
+          type: string
       required:
-        - count
-        - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-    PatchedAddress:
+      - new_password
+      - token
+      - uid
+    PasswordResetConfirmRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 1
+      required:
+      - new_password
+      - token
+      - uid
+    PatchedAddressRequest:
+      type: object
+      properties:
         label:
           type: string
+          minLength: 1
           description: e.g. 'Home', 'Work'
           maxLength: 30
         street:
           type: string
+          minLength: 1
           maxLength: 100
         number:
           type: string
+          minLength: 1
           maxLength: 10
         zipcode:
           type: string
+          minLength: 1
           maxLength: 10
         city:
           type: string
+          minLength: 1
           maxLength: 50
         country:
           type: string
+          minLength: 1
           maxLength: 50
         is_billing:
           type: boolean
         is_shipping:
           type: boolean
-        profile:
-          type: integer
-    PatchedCustomerProfile:
+    PatchedAdminProfileRequest:
       type: object
       properties:
-        id:
+        user:
           type: integer
-          readOnly: true
         phone_number:
           type: string
           maxLength: 20
@@ -2785,50 +3653,53 @@ components:
           type: string
           format: date
           nullable: true
-        user:
-          type: integer
-    PatchedOrderCreate:
+    PatchedAppUserRequest:
       type: object
       properties:
-        order_id:
+        email:
           type: string
-          format: uuid
-          readOnly: true
+          format: email
+          minLength: 1
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+    PatchedOrderCreateRequest:
+      type: object
+      properties:
         status:
-          $ref: "#/components/schemas/StatusEnum"
+          $ref: '#/components/schemas/StatusEnum'
         items:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItemDetail"
-    PatchedOrderItemCreateUpdate:
+            $ref: '#/components/schemas/OrderItemDetailRequest'
+    PatchedOrderItemCreateUpdateRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        order:
-          type: string
-          format: uuid
-          readOnly: true
         product:
           type: integer
         quantity:
           type: integer
-        item_subtotal:
-          type: number
-          format: double
-          readOnly: true
-    PatchedProduct:
+    PatchedProductRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
+          minLength: 1
           maxLength: 200
         description:
           type: string
+          minLength: 1
         price:
           type: string
           format: decimal
@@ -2838,33 +3709,30 @@ components:
           maximum: 9223372036854775807
           minimum: 0
           format: int64
-        in_stock:
-          type: boolean
-          readOnly: true
         image:
           type: string
-          format: uri
+          format: binary
           nullable: true
-    PatchedUser:
+    PatchedUserProfileRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        email:
+        phone_number:
           type: string
-          format: email
-          maxLength: 254
-        first_name:
+          maxLength: 20
+        date_of_birth:
           type: string
+          format: date
+          nullable: true
+    PatchedUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
           maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        profile:
-          allOf:
-            - $ref: "#/components/schemas/CustomerProfile"
-          readOnly: true
     Product:
       type: object
       properties:
@@ -2893,19 +3761,114 @@ components:
           format: uri
           nullable: true
       required:
-        - description
-        - id
-        - in_stock
-        - name
-        - price
-        - stock
+      - description
+      - id
+      - in_stock
+      - name
+      - price
+      - stock
+    ProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        image:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - description
+      - name
+      - price
+      - stock
+    SendEmailReset:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    SendEmailResetRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    SetPassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+        current_password:
+          type: string
+      required:
+      - current_password
+      - new_password
+    SetPasswordRequest:
+      type: object
+      properties:
+        new_password:
+          type: string
+          minLength: 1
+        current_password:
+          type: string
+          minLength: 1
+      required:
+      - current_password
+      - new_password
+    SetUsername:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_email:
+          type: string
+          format: email
+          title: Email
+          maxLength: 254
+      required:
+      - current_password
+      - new_email
+    SetUsernameRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          minLength: 1
+        new_email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email
+          maxLength: 254
+      required:
+      - current_password
+      - new_email
     StatusEnum:
       enum:
-        - Pending
-        - Confirmed
-        - Shipped
-        - Delivered
-        - Cancelled
+      - Pending
+      - Confirmed
+      - Shipped
+      - Delivered
+      - Cancelled
       type: string
       description: |-
         * `Pending` - Pending
@@ -2916,12 +3879,6 @@ components:
     TokenObtainPair:
       type: object
       properties:
-        email:
-          type: string
-          writeOnly: true
-        password:
-          type: string
-          writeOnly: true
         access:
           type: string
           readOnly: true
@@ -2929,10 +3886,22 @@ components:
           type: string
           readOnly: true
       required:
-        - access
-        - email
-        - password
-        - refresh
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
     TokenRefresh:
       type: object
       properties:
@@ -2942,32 +3911,159 @@ components:
         refresh:
           type: string
       required:
-        - access
-        - refresh
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
     User:
       type: object
       properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
         id:
           type: integer
           readOnly: true
         email:
           type: string
           format: email
-          maxLength: 254
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        profile:
-          allOf:
-            - $ref: "#/components/schemas/CustomerProfile"
           readOnly: true
       required:
-        - email
-        - id
-        - profile
+      - email
+      - id
+      - username
+    UserCreatePasswordRetype:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        id:
+          type: integer
+          readOnly: true
+        re_password:
+          type: string
+      required:
+      - email
+      - id
+      - re_password
+      - username
+    UserCreatePasswordRetypeRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        re_password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+      - re_password
+      - username
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+          readOnly: true
+      required:
+      - addresses
+      - id
+    UserProfileRequest:
+      type: object
+      properties:
+        phone_number:
+          type: string
+          maxLength: 20
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - username
+    UsernameResetConfirm:
+      type: object
+      properties:
+        new_email:
+          type: string
+          format: email
+          title: Email
+          maxLength: 254
+      required:
+      - new_email
+    UsernameResetConfirmRequest:
+      type: object
+      properties:
+        new_email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email
+          maxLength: 254
+      required:
+      - new_email
   securitySchemes:
     cookieAuth:
       type: apiKey
@@ -2978,5 +4074,5 @@ components:
       scheme: bearer
       bearerFormat: JWT
 servers:
-  - url: https://web-production-7c555.up.railway.app
-    description: Production API
+- url: /api
+  description: API base path

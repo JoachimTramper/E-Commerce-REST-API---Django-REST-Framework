@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Address, CustomerProfile, User
+from .models import Address, CustomerProfile
+
+User = get_user_model()
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -10,6 +13,26 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
         fields = [
             "id",
+            "label",
+            "street",
+            "number",
+            "zipcode",
+            "city",
+            "country",
+            "is_billing",
+            "is_shipping",
+        ]
+
+
+class AdminAddressSerializer(serializers.ModelSerializer):
+    # Admins can set the profile directly
+    profile = serializers.PrimaryKeyRelatedField(queryset=CustomerProfile.objects.all())
+
+    class Meta:
+        model = Address
+        fields = [
+            "id",
+            "profile",
             "label",
             "street",
             "number",
@@ -48,6 +71,39 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Unique name for openapi schema generation
         ref_name = "AppUser"
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password",
+            "is_active",
+            "is_staff",
+        ]
+
+    def create(self, validated_data):
+        pw = validated_data.pop("password", None)
+        user = super().create(validated_data)
+        if pw:
+            user.set_password(pw)
+            user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        pw = validated_data.pop("password", None)
+        user = super().update(instance, validated_data)
+        if pw:
+            user.set_password(pw)
+            user.save()
+        return user
 
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -35,11 +35,19 @@ def api_client():
 #
 @pytest.fixture(scope="function")
 def user(db):
-    """
-    Default “normal” user for most tests.
-    """
     return User.objects.create_user(
         username="testuser", email="foo@bar.com", password="UncommonP4ssw0rd!"
+    )
+
+
+@pytest.fixture
+def admin_user(db):
+    return User.objects.create_user(
+        username="admin",
+        email="admin@bar.com",
+        password="password123",
+        is_staff=True,
+        is_superuser=True,
     )
 
 
@@ -54,10 +62,10 @@ def auth_client(api_client, user):
 
 
 @pytest.fixture(scope="function")
-def admin_client(auth_client, user):
-    user.is_staff = True
-    user.save()
-    return auth_client
+def admin_client(api_client, admin_user):
+    token = RefreshToken.for_user(admin_user).access_token
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    return api_client
 
 
 #
