@@ -561,142 +561,6 @@ paths:
       responses:
         '200':
           description: OK
-  /me/addresses/:
-    get:
-      operationId: me_addresses_list
-      parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      tags:
-      - me
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedAddressList'
-          description: ''
-    post:
-      operationId: me_addresses_create
-      tags:
-      - me
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-          description: ''
-  /me/delete/:
-    delete:
-      operationId: me_delete_destroy
-      tags:
-      - me
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /me/profile/:
-    get:
-      operationId: me_profile_retrieve
-      tags:
-      - me
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
-          description: ''
-    put:
-      operationId: me_profile_update
-      tags:
-      - me
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserProfileRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
-          description: ''
-    patch:
-      operationId: me_profile_partial_update
-      tags:
-      - me
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUserProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUserProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedUserProfileRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
-          description: ''
   /shop/cart/:
     get:
       operationId: shop_cart_list
@@ -2504,6 +2368,14 @@ paths:
     get:
       operationId: users_addresses_list
       parameters:
+      - in: query
+        name: city
+        schema:
+          type: string
+      - in: query
+        name: country
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
@@ -2516,14 +2388,24 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - name: search
         required: false
         in: query
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: zipcode
+        schema:
+          type: string
       tags:
-      - Addresses
+      - users
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -2554,7 +2436,7 @@ paths:
     post:
       operationId: users_addresses_create
       tags:
-      - Addresses
+      - users
       requestBody:
         content:
           application/json:
@@ -2609,10 +2491,11 @@ paths:
       - in: path
         name: id
         schema:
-          type: string
+          type: integer
+        description: A unique integer value identifying this Address.
         required: true
       tags:
-      - Addresses
+      - users
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -2642,10 +2525,11 @@ paths:
       - in: path
         name: id
         schema:
-          type: string
+          type: integer
+        description: A unique integer value identifying this Address.
         required: true
       tags:
-      - Addresses
+      - users
       requestBody:
         content:
           application/json:
@@ -2699,10 +2583,11 @@ paths:
       - in: path
         name: id
         schema:
-          type: string
+          type: integer
+        description: A unique integer value identifying this Address.
         required: true
       tags:
-      - Addresses
+      - users
       requestBody:
         content:
           application/json:
@@ -2755,10 +2640,11 @@ paths:
       - in: path
         name: id
         schema:
-          type: string
+          type: integer
+        description: A unique integer value identifying this Address.
         required: true
       tags:
-      - Addresses
+      - users
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -2807,10 +2693,26 @@ paths:
                 additionalProperties: {}
                 description: Unspecified response body
           description: ''
-  /users/profiles/:
+  /users/me/addresses/:
     get:
-      operationId: users_profiles_list
+      operationId: users_me_addresses_list
       parameters:
+      - in: query
+        name: city
+        schema:
+          type: string
+      - in: query
+        name: country
+        schema:
+          type: string
+      - in: query
+        name: is_billing
+        schema:
+          type: boolean
+      - in: query
+        name: is_shipping
+        schema:
+          type: boolean
       - name: ordering
         required: false
         in: query
@@ -2829,6 +2731,254 @@ paths:
         description: A search term.
         schema:
           type: string
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAddressList'
+          description: ''
+    post:
+      operationId: users_me_addresses_create
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /users/me/addresses/{id}/:
+    get:
+      operationId: users_me_addresses_retrieve
+      description: Authenticated user to GET, PATCH or DELETE their own address.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    put:
+      operationId: users_me_addresses_update
+      description: Authenticated user to GET, PATCH or DELETE their own address.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    patch:
+      operationId: users_me_addresses_partial_update
+      description: Authenticated user to GET, PATCH or DELETE their own address.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAddressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAddressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAddressRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    delete:
+      operationId: users_me_addresses_destroy
+      description: Authenticated user to GET, PATCH or DELETE their own address.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /users/me/delete/:
+    delete:
+      operationId: users_me_delete_destroy
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /users/me/profile/:
+    get:
+      operationId: users_me_profile_retrieve
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    put:
+      operationId: users_me_profile_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: users_me_profile_partial_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /users/profiles/:
+    get:
+      operationId: users_profiles_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: phone_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: user__id
+        schema:
+          type: integer
       tags:
       - users
       security:
@@ -2975,24 +3125,37 @@ paths:
     get:
       operationId: users_users_list
       parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+      - in: query
+        name: date_joined
         schema:
           type: string
+          format: date-time
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
       - name: page
         required: false
         in: query
         description: A page number within the paginated result set.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
+      - in: query
+        name: search
         schema:
           type: string
+        description: Partial search on email or username
       tags:
       - users
       security:
@@ -3003,7 +3166,54 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedAppUserList'
+                $ref: '#/components/schemas/PaginatedAdminUserList'
+          description: ''
+    post:
+      operationId: users_users_create
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Partial search on email or username
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
           description: ''
   /users/users/{id}/:
     get:
@@ -3015,6 +3225,26 @@ paths:
           type: integer
         description: A unique integer value identifying this user.
         required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Partial search on email or username
       tags:
       - users
       security:
@@ -3025,8 +3255,150 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppUser'
+                $ref: '#/components/schemas/AdminUser'
           description: ''
+    put:
+      operationId: users_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Partial search on email or username
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+    patch:
+      operationId: users_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Partial search on email or username
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+    delete:
+      operationId: users_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter on active users (true/false)
+      - in: query
+        name: is_staff
+        schema:
+          type: boolean
+        description: Filter on staff users (true/false)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Sort by date_joined or email; prefix "-" for descending
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Partial search on email or username
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /webhooks/payment/:
     post:
       operationId: webhooks_payment_create
@@ -3171,6 +3543,78 @@ components:
           nullable: true
       required:
       - user
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        is_staff:
+          type: boolean
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+      required:
+      - email
+      - id
+      - username
+    AdminUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        is_staff:
+          type: boolean
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
+      required:
+      - email
+      - username
     AppUser:
       type: object
       properties:
@@ -3442,6 +3886,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminProfile'
+    PaginatedAdminUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUser'
     PaginatedAppUserList:
       type: object
       required:
@@ -3653,6 +4120,40 @@ components:
           type: string
           format: date
           nullable: true
+    PatchedAdminUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        is_staff:
+          type: boolean
+          title: Staff status
+          description: Designates whether the user can log into this admin site.
     PatchedAppUserRequest:
       type: object
       properties:

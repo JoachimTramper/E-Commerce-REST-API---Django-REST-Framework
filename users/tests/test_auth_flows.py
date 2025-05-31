@@ -48,30 +48,44 @@ class TestAuthFlows:
         resp = api_client.post(url, payload, format="json")
         assert resp.status_code == 201, f"Registration failed: {resp.data}"
 
-        # verify that an activation email was sent
-        assert len(mailoutbox) == 1, "No activation email sent"
-        email_body = mailoutbox[0].body
+        # check activation mail
+        assert any(
+            "activate/" in m.body for m in mailoutbox
+        ), f"No activation mail, subjects: {[m.subject for m in mailoutbox]}"
+
+        # check welcome mail
+        assert any(
+            "Welcome to EcommerceAPI!" in m.subject for m in mailoutbox
+        ), f"No welcome mail, subjects: {[m.subject for m in mailoutbox]}"
+
+        email_body = next(m.body for m in mailoutbox if "activate/" in m.body)
+
         match = re.search(r"activate/(?P<uid>[^/]+)/(?P<token>[^/]+)", email_body)
         assert match, "Activation link not found in email body"
+        uid_from_link, token_from_link = match.group("uid", "token")
 
-        # independently generate valid token and test activation endpoint
+        # find the ActivationEmail instance to access its context["user"].
+        from djoser.email import ActivationEmail
+
+        activation_email = next(m for m in mailoutbox if isinstance(m, ActivationEmail))
+        user = activation_email.context["user"]
+
+        # generate uid_bytes and token, based on user
         from django.contrib.auth.tokens import default_token_generator
         from django.utils.encoding import force_bytes
         from django.utils.http import urlsafe_base64_encode
 
-        # decode uid from email and regenerate token
-        uid_bytes = urlsafe_base64_encode(
-            force_bytes(mailoutbox[0].context.get("user").pk)
-        )
-        token = default_token_generator.make_token(mailoutbox[0].context.get("user"))
+        uid_bytes = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
 
+        # activate via API
         activation_url = reverse("user-activation")
-        resp = api_client.post(
+        resp2 = api_client.post(
             activation_url, {"uid": uid_bytes, "token": token}, format="json"
         )
         assert (
-            resp.status_code == 204
-        ), f"Activation failed with valid token: {resp.data}"
+            resp2.status_code == 204
+        ), f"Activation failed with valid token: {resp2.data}"
 
     def test_password_reset_flow(self, api_client, mailoutbox, user):
         # request reset email

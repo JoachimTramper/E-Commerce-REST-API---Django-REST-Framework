@@ -172,7 +172,10 @@ def disable_all_throttling(monkeypatch, request):
     """
     Disable DRF throttling in every test except test_throttling.py.
     """
-    if request.fspath.basename != "test_throttling.py":
+    if request.fspath.basename not in (
+        "test_throttling_shop.py",
+        "test_throttling_users.py",
+    ):
         for cls in (
             SimpleRateThrottle,
             AnonRateThrottle,
@@ -193,7 +196,11 @@ def disable_all_caching(monkeypatch, request):
     Disable the cache_page decorator in every test except
     test_caching.py and test_throttling.py.
     """
-    if request.fspath.basename not in ("test_caching.py", "test_throttling.py"):
+    if request.fspath.basename not in (
+        "test_caching.py",
+        "test_throttling_shop.py",
+        "test_throttling_users.py",
+    ):
         monkeypatch.setattr(
             _cache_mod,
             "cache_page",
@@ -207,7 +214,11 @@ def disable_view_level_caching(monkeypatch, request):
     Unwrap any existing @cache_page on ProductViewSet.list and .retrieve
     except in test_caching.py and test_throttling.py.
     """
-    if request.fspath.basename not in ("test_caching.py", "test_throttling.py"):
+    if request.fspath.basename not in (
+        "test_caching.py",
+        "test_throttling_shop.py",
+        "test_throttling_users.py",
+    ):
         # Unwrap `list`
         if hasattr(ProductViewSet.list, "__wrapped__"):
             monkeypatch.setattr(ProductViewSet, "list", ProductViewSet.list.__wrapped__)

@@ -17,6 +17,19 @@ from pathlib import Path
 from typing import Any, Dict
 
 import dj_database_url
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+SENTRY_DSN = os.getenv("SENTRY_DSN", None)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        # send user context when they are authenticated
+        send_default_pii=True,
+        traces_sample_rate=0.1,
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
@@ -322,6 +335,13 @@ DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "ACTIVATION_URL": "activate/{uid}/{token}",
     "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}",
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
+    "PASSWORD_RESET_CONFIRM_RETYPE": True,
+    "EMAIL": {
+        "activation": "users.email.CustomActivationEmail",
+        "password_reset": "users.email.CustomPasswordResetEmail",
+        "password_reset_confirm": "users.email.CustomPasswordResetConfirmEmail",
+    },
     "SERIALIZERS": {
         "user_create": "users.serializers.RegisterSerializer",
         "user": "users.serializers.UserSerializer",

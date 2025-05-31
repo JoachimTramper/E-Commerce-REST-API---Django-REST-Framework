@@ -1,0 +1,37 @@
+{% load i18n %}
+
+{% block subject %}
+Welcome to EcommerceAPI!
+{% endblock subject %}
+
+{% block text_body %}
+Hi {{ user.username }},
+
+Thank you for registering at EcommerceAPI! We're excited to have you on board.
+
+To get started, you can log in here:
+{{ protocol }}://{{ domain }}/login
+
+If you have any questions, feel free to reply to this email.
+
+Best regards,
+The EcommerceAPI Team
+{% endblock text_body %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Welcome to EcommerceAPI!</h1>
+    <p>Hi {{ user.username }},</p>
+    <p>
+      Thank you for registering at <strong>EcommerceAPI</strong>! We're excited to have you on board.
+    </p>
+    <p>
+      To get started, you can <a href="{{ protocol }}://{{ domain }}/login">log in here</a>.
+    </p>
+    <p>If you have any questions, feel free to reply to this email.</p>
+    <p>Best regards,<br>The EcommerceAPI Team</p>
+  </body>
+</html>
+{% endblock html_body %}

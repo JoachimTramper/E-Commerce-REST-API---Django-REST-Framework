@@ -9,6 +9,11 @@ from rest_framework import generics, permissions, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import (
+    AnonRateThrottle,
+    ScopedRateThrottle,
+    UserRateThrottle,
+)
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -23,6 +28,11 @@ from users.serializers import (
 class TOTPSetupView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TOTPSetupSerializer
+    throttle_classes = [
+        UserRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     @extend_schema(
         operation_id="2fa_setup",
@@ -59,6 +69,11 @@ class TOTPSetupView(generics.GenericAPIView):
 class TOTPVerifyView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TOTPVerifySerializer
+    throttle_classes = [
+        UserRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     @extend_schema(
         operation_id="2fa_verify",
@@ -92,6 +107,11 @@ class TOTPVerifyView(generics.GenericAPIView):
 class TOTPDisableView(generics.DestroyAPIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [
+        UserRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     @extend_schema(
         operation_id="2fa_disable",
@@ -110,6 +130,12 @@ class CustomTokenObtainPairView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [
+        UserRateThrottle,
+        AnonRateThrottle,
+        ScopedRateThrottle,
+    ]
+    throttle_scope = "write-burst"
 
     @extend_schema(
         operation_id="login",
