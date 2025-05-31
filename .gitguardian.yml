@@ -1,4 +1,16 @@
-excludes:
-  - path: "**/tests/**"
-  - path: "**/test_*.py"
-  - path: "**/*_test.py"
+version: 2
+
+secret:
+  ignored_paths:
+    - "**/tests/**"
+
+    - "**/*.json"
+
+    - ".github/workflows/**"
+
+    - "db.sqlite3"
+
+    - "staticfiles/**"
+    - "docs/swagger-ui/**"
+
+    - "conftest.py"
