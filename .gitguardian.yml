@@ -1,4 +1,4 @@
 excludes:
-  - path: **/tests/**
-  - path: **/test_*.py
-  - path: **/*_test.py
+  - path: "**/tests/**"
+  - path: "**/test_*.py"
+  - path: "**/*_test.py"
