@@ -46,7 +46,7 @@ jobs:
 
       - name: Run GitGuardian scan
         run: |
-          ggshield secret scan repo .
+          ggshield secret scan path . --config .gitguardian.yml
 
       - name: Wait for Postgres
         run: sleep 10
