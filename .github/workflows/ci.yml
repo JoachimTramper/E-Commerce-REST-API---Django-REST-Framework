@@ -40,18 +40,10 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-django coverage flake8 django-filter
 
-      - name: Run GitGuardian secret scan (in Docker container, v1.40.x)
-        uses: addnab/docker-run-action@v3
-        with:
-          image: gitguardian/ggshield:latest
-          options: >
-            --rm
-            -e GITGUARDIAN_API_KEY=${{ secrets.GITGUARDIAN_API_KEY }}
-            -v ${{ github.workspace }}:/src
-            -w /src
-          run: |
-            git config --global --add safe.directory /src
-            ggshield secret scan path --recursive . --yes
+      - name: Run GitGuardian secret scan
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+        run: ggshield secret scan path --recursive . --yes
 
       - name: Wait for Postgres
         run: sleep 10
