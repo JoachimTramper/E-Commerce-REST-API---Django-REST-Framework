@@ -49,9 +49,9 @@ jobs:
             -e GITGUARDIAN_API_KEY=${{ secrets.GITGUARDIAN_API_KEY }}
             -v ${{ github.workspace }}:/github/workspace
             -w /github/workspace
-        run: |
-          git config --global --add safe.directory /github/workspace
-          ggshield secret scan path --recursive . --yes
+          run: |
+            git config --global --add safe.directory /github/workspace
+            ggshield secret scan path --recursive . --yes
 
       - name: Wait for Postgres
         run: sleep 10
