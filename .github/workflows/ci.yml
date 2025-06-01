@@ -40,6 +40,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-django coverage flake8 django-filter
 
+      - name: Mark GitHub workspace as safe
+        run: git config --global --add safe.directory /github/workspace
+
       - name: Run GitGuardian secret scan (in Docker container, v1.40.x)
         uses: addnab/docker-run-action@v3
         with:
