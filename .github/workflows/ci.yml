@@ -43,7 +43,10 @@ jobs:
       - name: GitGuardian secret scan
         run: |
           git config --global --add safe.directory "${{ github.workspace }}"
-          python -m pipx run ggshield secret scan path --recursive . --yes
+          python -m pipx run ggshield secret scan path \
+            --recursive . \
+            --exclude ".git" \
+            --yes
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
