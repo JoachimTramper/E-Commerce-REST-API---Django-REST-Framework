@@ -16,7 +16,6 @@ from .views.otp import (
 )
 from .views.profiles import CustomerProfileViewSet
 from .views.users import UserViewSet
-from .views.views import sentry_test_error
 
 app_name = "users"
 
@@ -46,5 +45,4 @@ urlpatterns = [
         CustomTokenObtainPairView.as_view(),
         name="token_obtain_pair",
     ),
-    path("sentry-test/", sentry_test_error, name="sentry-test"),
 ]
