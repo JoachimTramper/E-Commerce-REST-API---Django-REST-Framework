@@ -50,7 +50,8 @@ jobs:
             -v ${{ github.workspace }}:/github/workspace
             -w /github/workspace
           run: |
-            git config --global --add safe.directory /github/workspace
+            /usr/bin/git config --global --add safe.directory /github/workspace
+            /usr/bin/git init || true
             ggshield secret scan path --recursive . --yes
 
       - name: Wait for Postgres
