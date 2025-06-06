@@ -14,6 +14,7 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
+    stock_reserved = models.IntegerField(default=0)
     image = models.ImageField(upload_to="products/", blank=True, null=True)
 
     class Meta:
@@ -30,6 +31,7 @@ class Product(models.Model):
 class Order(models.Model):
     class StatusChoices(models.TextChoices):
         PENDING = "Pending"
+        AWAITING_PAYMENT = "AwaitingPayment"
         CONFIRMED = "Confirmed"
         SHIPPED = "Shipped"
         DELIVERED = "Delivered"
@@ -39,8 +41,9 @@ class Order(models.Model):
     order_number = models.PositiveIntegerField(unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    reserved_until = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
-        max_length=10, choices=StatusChoices.choices, default=StatusChoices.PENDING
+        max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING
     )
     products = models.ManyToManyField(
         Product, through="OrderItem", related_name="orders"

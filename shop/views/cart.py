@@ -1,5 +1,10 @@
+from datetime import timedelta
+
+from django.db import transaction
 from django.db.models import DecimalField, F, Sum
+from django.db.utils import OperationalError
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -12,14 +17,13 @@ from rest_framework.throttling import (
 )
 
 from shop.docs.examples import CART_EXAMPLES, CART_ITEM_EXAMPLES
-from shop.models import Order, OrderItem
+from shop.models import Order, OrderItem, Product
 from shop.serializers import (
     CartSerializer,
     OrderItemCreateUpdateSerializer,
     OrderItemDetailSerializer,
     OrderItemListSerializer,
 )
-from shop.tasks import send_order_email_with_invoice
 
 
 @extend_schema_view(
@@ -35,8 +39,15 @@ from shop.tasks import send_order_email_with_invoice
     checkout=extend_schema(
         operation_id="cartCheckout",
         request=None,
-        responses={204: OpenApiResponse(description="Cart checked out")},
-        description="Set the pending cart to CONFIRMED; subsequent GET /cart/ returns 404",
+        responses={
+            200: OpenApiResponse(
+                description="Stock reserved; you have 10 minutes to complete payment.",
+            ),
+            400: OpenApiResponse(description="Not enough stock / concurrency error"),
+            404: OpenApiResponse(description="No pending cart"),
+        },
+        description="Reserve stock and sets status to AWAITING_PAYMENT. "
+        "Returns 200 + JSON { message: … } if successful.",
     ),
 )
 class CartViewSet(viewsets.ViewSet):
@@ -50,9 +61,7 @@ class CartViewSet(viewsets.ViewSet):
 
     def list(self, request):
         cart = get_object_or_404(
-            Order.objects.prefetch_related(
-                "items__product"
-            ).annotate(  # goed: product is een FK op OrderItem
+            Order.objects.prefetch_related("items__product").annotate(
                 total_amount=Sum(
                     F("items__quantity") * F("items__price"),
                     output_field=DecimalField(max_digits=12, decimal_places=2),
@@ -65,14 +74,62 @@ class CartViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["post"], url_path="checkout")
     def checkout(self, request):
+        """
+        When the user checks out:
+        1) Retrieve the PENDING order (the cart).
+        2) Inside a single transaction, decrement stock for each OrderItem atomically.
+           - If stock is insufficient for any product, return an error and roll back.
+        3) Only if all stock updates succeed, set the order status to CONFIRMED and save.
+        """
+
+        # fetch the pending cart for this user
         cart = get_object_or_404(
-            Order, user=request.user, status=Order.StatusChoices.PENDING
+            Order.objects.prefetch_related("items__product"),
+            user=request.user,
+            status=Order.StatusChoices.PENDING,
         )
-        cart.status = Order.StatusChoices.CONFIRMED
-        cart.save()
-        # Trigger Celery task
-        send_order_email_with_invoice.delay(str(cart.order_id))
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        expire_at = timezone.now() + timedelta(minutes=10)
+
+        # reserve stock within an atomic transaction
+        with transaction.atomic():
+            for item in cart.items.all():
+                product_id = item.product_id
+                qty = item.quantity
+
+                try:
+                    # atomically increase stock_reserved if there is enough free stock
+                    updated = Product.objects.filter(
+                        pk=product_id, stock__gte=F("stock_reserved") + qty
+                    ).update(stock_reserved=F("stock_reserved") + qty)
+                except OperationalError:
+                    # SQLite may raise “table is locked” on concurrent updates
+                    return Response(
+                        {
+                            "detail": f"Could not reserve stock for '{item.product.name}'."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                if updated == 0:
+                    # not enough available stock to reserve
+                    return Response(
+                        {
+                            "detail": f"Not enough stock to reserve '{item.product.name}'."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # all items reserved successfully: set reserved_until and status
+            cart.reserved_until = expire_at
+            cart.status = Order.StatusChoices.AWAITING_PAYMENT
+            cart.save()
+
+        # return a simple confirmation message (no real payment in portfolio)
+        return Response(
+            {"message": "Stock reserved; you have 10 minutes to complete payment."},
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema_view(
@@ -117,7 +174,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
     throttle_scope = "write-burst"
 
     def get_queryset(self):
-        # Only show items from the current user's pending cart
+        # only show items from the current user's pending cart
         return OrderItem.objects.select_related("product", "order").filter(
             order__user=self.request.user, order__status=Order.StatusChoices.PENDING
         )

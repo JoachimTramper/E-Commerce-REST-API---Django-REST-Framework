@@ -191,7 +191,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/AppUserRequest'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -292,7 +291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/AppUser'
           description: ''
     put:
       operationId: auth_users_me_update
@@ -302,14 +301,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRequest'
+              $ref: '#/components/schemas/AppUserRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserRequest'
+              $ref: '#/components/schemas/AppUserRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
+              $ref: '#/components/schemas/AppUserRequest'
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -318,7 +316,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/AppUser'
           description: ''
     patch:
       operationId: auth_users_me_partial_update
@@ -328,13 +326,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedAppUserRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedAppUserRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedAppUserRequest'
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -343,7 +341,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/AppUser'
           description: ''
     delete:
       operationId: auth_users_me_destroy
@@ -476,13 +474,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRetypeRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRetypeRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRetypeRequest'
         required: true
       security:
       - jwtAuth: []
@@ -493,7 +491,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasswordResetConfirm'
+                $ref: '#/components/schemas/PasswordResetConfirmRetype'
           description: ''
   /auth/users/set_email/:
     post:
@@ -609,16 +607,20 @@ paths:
   /shop/cart/checkout/:
     post:
       operationId: cartCheckout
-      description: Set the pending cart to CONFIRMED; subsequent GET /cart/ returns
-        404
+      description: 'Reserve stock and sets status to AWAITING_PAYMENT. Returns 200
+        + JSON { message: … } if successful.'
       tags:
       - shop
       security:
       - jwtAuth: []
       - cookieAuth: []
       responses:
-        '204':
-          description: Cart checked out
+        '200':
+          description: Stock reserved; you have 10 minutes to complete payment.
+        '400':
+          description: Not enough stock / concurrency error
+        '404':
+          description: No pending cart
   /shop/cart/items/:
     get:
       operationId: cartItemsList
@@ -810,6 +812,7 @@ paths:
         schema:
           type: string
           enum:
+          - AwaitingPayment
           - Cancelled
           - Confirmed
           - Delivered
@@ -817,6 +820,7 @@ paths:
           - Shipped
         description: |-
           * `Pending` - Pending
+          * `AwaitingPayment` - Awaiting Payment
           * `Confirmed` - Confirmed
           * `Shipped` - Shipped
           * `Delivered` - Delivered
@@ -2693,6 +2697,71 @@ paths:
                 additionalProperties: {}
                 description: Unspecified response body
           description: ''
+  /users/me/:
+    get:
+      operationId: users_me_retrieve
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+    put:
+      operationId: users_me_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
+    patch:
+      operationId: users_me_partial_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAppUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUser'
+          description: ''
   /users/me/addresses/:
     get:
       operationId: users_me_addresses_list
@@ -2953,6 +3022,21 @@ paths:
     get:
       operationId: users_profiles_list
       parameters:
+      - in: query
+        name: date_of_birth
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_of_birth__gte
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_of_birth__lte
+        schema:
+          type: string
+          format: date
       - name: ordering
         required: false
         in: query
@@ -2966,7 +3050,7 @@ paths:
         schema:
           type: integer
       - in: query
-        name: phone_number
+        name: phone_number__icontains
         schema:
           type: string
       - name: search
@@ -2976,7 +3060,7 @@ paths:
         schema:
           type: string
       - in: query
-        name: user__id
+        name: user
         schema:
           type: integer
       tags:
@@ -3130,6 +3214,10 @@ paths:
         schema:
           type: string
           format: date-time
+      - in: query
+        name: email
+        schema:
+          type: string
       - in: query
         name: is_active
         schema:
@@ -3401,16 +3489,57 @@ paths:
           description: No response body
   /webhooks/payment/:
     post:
-      operationId: webhooks_payment_create
+      operationId: paymentWebhook
+      description: |-
+        Payment provider callback endpoint:
+        - Verify header `X-Webhook-Key` matches the configured secret.
+        - Expect JSON body with `order_id` (UUID) and `status` ('paid' or 'failed').
+        - If `status == 'paid'` and order is in `AWAITING_PAYMENT`, then:
+          1) Decrement `stock` and `stock_reserved` for each OrderItem within an atomic transaction.
+          2) Change order status to `CONFIRMED` and save.
+          3) Dispatch Celery task `send_order_email_with_invoice.delay(order_id)`.
+        - Always return 200 OK with a JSON confirmation message `{ 'message': 'Webhook received' }`.
+      parameters:
+      - in: header
+        name: X-Webhook-Key
+        schema:
+          type: string
+        description: Secret key required to authenticate the webhook request
+        required: true
       tags:
       - webhooks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+            examples:
+              PaymentWebhookRequest:
+                value:
+                  order_id: 327a8ead-4e5f-4815-a6ed-0ff3ba4d335b
+                  status: paid
+                summary: Example payload for payment_webhook
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
       - {}
       responses:
         '200':
-          description: Webhook received
+          description: Webhook received; if status='paid' and order was AWAITING_PAYMENT,
+            stock is decremented, order set to CONFIRMED, and invoice email triggered.
+        '400':
+          description: Missing data or insufficient stock
+        '403':
+          description: Unauthorized (invalid X-Webhook-Key)
+        '404':
+          description: Order not found
 components:
   schemas:
     Activation:
@@ -3453,7 +3582,7 @@ components:
           maxLength: 10
         zipcode:
           type: string
-          maxLength: 10
+          minLength: 3
         city:
           type: string
           maxLength: 50
@@ -3490,8 +3619,7 @@ components:
           maxLength: 10
         zipcode:
           type: string
-          minLength: 1
-          maxLength: 10
+          minLength: 3
         city:
           type: string
           minLength: 1
@@ -3624,13 +3752,8 @@ components:
         email:
           type: string
           format: email
-          maxLength: 254
         username:
           type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         first_name:
           type: string
           maxLength: 150
@@ -3642,10 +3765,8 @@ components:
           - $ref: '#/components/schemas/UserProfile'
           readOnly: true
       required:
-      - email
       - id
       - profile
-      - username
     AppUserRequest:
       type: object
       properties:
@@ -3653,23 +3774,15 @@ components:
           type: string
           format: email
           minLength: 1
-          maxLength: 254
         username:
           type: string
           minLength: 1
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         first_name:
           type: string
           maxLength: 150
         last_name:
           type: string
           maxLength: 150
-      required:
-      - email
-      - username
     Cart:
       type: object
       properties:
@@ -3703,7 +3816,7 @@ components:
           format: uuid
           readOnly: true
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status93bEnum'
         items:
           type: array
           items:
@@ -3715,7 +3828,7 @@ components:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status93bEnum'
         items:
           type: array
           items:
@@ -3738,7 +3851,7 @@ components:
           readOnly: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/Status93bEnum'
           readOnly: true
         items:
           type: array
@@ -4047,7 +4160,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Product'
-    PasswordResetConfirm:
+    PasswordResetConfirmRetype:
       type: object
       properties:
         uid:
@@ -4056,11 +4169,14 @@ components:
           type: string
         new_password:
           type: string
+        re_new_password:
+          type: string
       required:
       - new_password
+      - re_new_password
       - token
       - uid
-    PasswordResetConfirmRequest:
+    PasswordResetConfirmRetypeRequest:
       type: object
       properties:
         uid:
@@ -4072,8 +4188,12 @@ components:
         new_password:
           type: string
           minLength: 1
+        re_new_password:
+          type: string
+          minLength: 1
       required:
       - new_password
+      - re_new_password
       - token
       - uid
     PatchedAddressRequest:
@@ -4094,8 +4214,7 @@ components:
           maxLength: 10
         zipcode:
           type: string
-          minLength: 1
-          maxLength: 10
+          minLength: 3
         city:
           type: string
           minLength: 1
@@ -4161,14 +4280,9 @@ components:
           type: string
           format: email
           minLength: 1
-          maxLength: 254
         username:
           type: string
           minLength: 1
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         first_name:
           type: string
           maxLength: 150
@@ -4179,7 +4293,7 @@ components:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/Status93bEnum'
         items:
           type: array
           items:
@@ -4219,21 +4333,37 @@ components:
       properties:
         phone_number:
           type: string
-          maxLength: 20
+          pattern: ^\d+$
         date_of_birth:
           type: string
           format: date
           nullable: true
-    PatchedUserRequest:
+    PaymentWebhookRequest:
       type: object
       properties:
-        username:
+        order_id:
           type: string
-          minLength: 1
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
+          format: uuid
+          description: UUID of paid order
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentWebhookStatusEnum'
+          description: |-
+            Payment status: 'paid' or 'failed'
+
+            * `paid` - paid
+            * `failed` - failed
+      required:
+      - order_id
+      - status
+    PaymentWebhookStatusEnum:
+      enum:
+      - paid
+      - failed
+      type: string
+      description: |-
+        * `paid` - paid
+        * `failed` - failed
     Product:
       type: object
       properties:
@@ -4363,9 +4493,10 @@ components:
       required:
       - current_password
       - new_email
-    StatusEnum:
+    Status93bEnum:
       enum:
       - Pending
+      - AwaitingPayment
       - Confirmed
       - Shipped
       - Delivered
@@ -4373,6 +4504,7 @@ components:
       type: string
       description: |-
         * `Pending` - Pending
+        * `AwaitingPayment` - Awaiting Payment
         * `Confirmed` - Confirmed
         * `Shipped` - Shipped
         * `Delivered` - Delivered
@@ -4431,26 +4563,6 @@ components:
           minLength: 1
       required:
       - token
-    User:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        id:
-          type: integer
-          readOnly: true
-        email:
-          type: string
-          format: email
-          readOnly: true
-      required:
-      - email
-      - id
-      - username
     UserCreatePasswordRetype:
       type: object
       properties:
@@ -4509,7 +4621,7 @@ components:
           readOnly: true
         phone_number:
           type: string
-          maxLength: 20
+          pattern: ^\d+$
         date_of_birth:
           type: string
           format: date
@@ -4527,23 +4639,11 @@ components:
       properties:
         phone_number:
           type: string
-          maxLength: 20
+          pattern: ^\d+$
         date_of_birth:
           type: string
           format: date
           nullable: true
-    UserRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          minLength: 1
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-      required:
-      - username
     UsernameResetConfirm:
       type: object
       properties:

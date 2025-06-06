@@ -29,13 +29,3 @@ class CustomerProfileAdmin(SimpleHistoryAdmin):
 class AddressAdmin(SimpleHistoryAdmin):
     list_display = ("profile", "label", "street", "city", "is_billing", "is_shipping")
     list_filter = ("is_billing", "is_shipping")
-
-
-# from django.contrib import admin
-# from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-
-# from .models import Address, CustomerProfile, User
-
-# admin.site.register(User, BaseUserAdmin)
-# admin.site.register(CustomerProfile)
-# admin.site.register(Address)

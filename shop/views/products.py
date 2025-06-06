@@ -56,12 +56,12 @@ class ProductViewSet(viewsets.ModelViewSet):
             self.throttle_scope = "user"
         return super().get_throttles()
 
-    @method_decorator(cache_page(30))  # Cache for 30 seconds
+    @method_decorator(cache_page(30))  # cache for 30 seconds
     def list(self, request, *args, **kwargs):
         with silk_profile(name="product-list"):
             return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
+    @method_decorator(cache_page(60 * 5))  # cache for 5 minutes
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
         response["Cache-Control"] = "public, max-age=300"

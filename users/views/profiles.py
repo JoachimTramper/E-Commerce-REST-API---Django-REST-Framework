@@ -25,10 +25,14 @@ class CustomerProfileViewSet(viewsets.ModelViewSet):
         ScopedRateThrottle,
     ]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["phone_number", "date_of_birth"]
+    filterset_fields = {
+        "phone_number": ["icontains"],
+        "user": ["exact"],
+        "date_of_birth": ["exact", "lte", "gte"],
+    }
     search_fields = ["phone_number"]
-    ordering_fields = ["date_of_birth", "id"]
-    ordering = ["-date_of_birth"]
+    ordering_fields = ["date_of_birth", "id", "user__date_joined"]
+    ordering = ["id"]
 
     def get_throttle_scope(self):
         if self.request.method == "GET":
