@@ -9,6 +9,14 @@ from users.models import Address, CustomerProfile
 from users.serializers import AddressSerializer, UserProfileSerializer, UserSerializer
 
 
+class UserMeView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
 class MeProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -94,7 +102,7 @@ class MeAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     ]
 
     def get_queryset(self):
-        # Filter addresses to only those owned by the requesting user
+        # filter addresses to only those owned by the requesting user
         return Address.objects.filter(profile__user=self.request.user)
 
     @extend_schema(responses={200: AddressSerializer})

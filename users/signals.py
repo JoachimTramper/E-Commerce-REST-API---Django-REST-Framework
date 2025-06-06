@@ -19,7 +19,7 @@ def ensure_base32_key(sender, instance, **kwargs):
         instance.key = pyotp.random_base32()
 
 
-# Confirmation email after registration
+# confirmation email after registration
 @receiver(user_registered)
 def on_user_registered(request, user, **kwargs):
     # sends an asynchronous welcome email via Celery

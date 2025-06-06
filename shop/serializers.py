@@ -84,7 +84,7 @@ class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
                 {"quantity": "Quantity must be at least 1."}
             )
 
-        # Check if the product is in stock
+        # check if the product is in stock
         if qty is not None and product is not None and qty > product.stock:
             raise serializers.ValidationError(
                 {
@@ -104,7 +104,7 @@ class OrderItemCreateUpdateSerializer(serializers.ModelSerializer):
             # if there is no pending order, return 403
             raise PermissionDenied("Cannot add items: no pending order exists.")
 
-        # Otherwise, create the order item
+        # otherwise, create the order item
         return OrderItem.objects.create(
             order=pending,
             product=validated_data["product"],
@@ -127,7 +127,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items_data = validated_data.pop("items")
         user = self.context["request"].user
-        # Transaction atomic block to ensure all-or-nothing
+        # transaction atomic block to ensure all-or-nothing
         with transaction.atomic():
             order = Order.objects.create(user=user, **validated_data)
             for item in items_data:
@@ -139,15 +139,15 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         return order
 
     def update(self, instance, validated_data):
-        # Take nested items out or for a PATCH request None
+        # take nested items out or for a PATCH request None
         items_data = validated_data.pop("items", None)
 
-        # Transaction atomic block to ensure all-or-nothing
+        # transaction atomic block to ensure all-or-nothing
         with transaction.atomic():
-            # Update the order instance
+            # update the order instance
             instance = super().update(instance, validated_data)
 
-            # If items_data is provided, update the order items
+            # if items_data is provided, update the order items
             if items_data is not None:
                 instance.items.all().delete()
                 for item in items_data:
@@ -157,7 +157,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                         quantity=item["quantity"],
                     )
 
-        # Commit, otherwise rollback
+        # commit, otherwise rollback
         return instance
 
 
@@ -189,7 +189,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        # Make sure there is at least one item in the order
+        # make sure there is at least one item in the order
         items = attrs.get("items") or []
         if not items:
             raise serializers.ValidationError(
@@ -267,3 +267,11 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_total_amount(self, obj) -> Decimal:
         return obj.total_amount
+
+
+class PaymentWebhookSerializer(serializers.Serializer):
+    order_id = serializers.UUIDField(help_text="UUID of paid order")
+    status = serializers.ChoiceField(
+        choices=[("paid", "paid"), ("failed", "failed")],
+        help_text="Payment status: 'paid' or 'failed'",
+    )

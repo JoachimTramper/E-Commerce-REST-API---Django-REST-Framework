@@ -7,6 +7,7 @@ from .views.me import (
     MeAddressListCreateView,
     MeDeleteView,
     MeProfileView,
+    UserMeView,
 )
 from .views.otp import (
     CustomTokenObtainPairView,
@@ -27,6 +28,7 @@ router.register(r"addresses", AddressViewSet, basename="addresses")
 urlpatterns = [
     path("", include(router.urls)),
     # me endpoints for authenticated users
+    path("me/", UserMeView.as_view(), name="user-me"),
     path("me/profile/", MeProfileView.as_view(), name="me-profile"),
     path("me/addresses/", MeAddressListCreateView.as_view(), name="me-addresses"),
     path(

@@ -6,7 +6,7 @@ class UsersConfig(AppConfig):
     name = "users"
 
     def ready(self):
-        # Load signal handlers (pre_save Base32 fixer)  # noqa: F401
+        # load signal handlers (pre_save Base32 fixer)  # noqa: F401
         import base64  # noqa: F401
 
         # Monkey-patch bin_key: try hex first, else Base32

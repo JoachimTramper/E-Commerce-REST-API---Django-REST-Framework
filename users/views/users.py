@@ -49,8 +49,14 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering = ["-date_joined"]
 
     def get_queryset(self):
-        # only return active users
-        return User.objects.filter(is_active=True).order_by("id")
+        qs = User.objects.all().order_by("id")
+        is_active_param = self.request.query_params.get("is_active")
+        if is_active_param is not None:
+            # filter by is_active if provided, if set to "false" return inactive users
+            active_bool = is_active_param.lower() == "true"
+            return qs.filter(is_active=active_bool)
+        # default: return only active users
+        return qs.filter(is_active=True)
 
     def perform_destroy(self, instance):
         # soft delete: deactivate instead of hard delete

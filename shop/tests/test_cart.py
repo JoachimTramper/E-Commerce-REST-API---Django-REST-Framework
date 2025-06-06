@@ -129,20 +129,20 @@ class TestCartItemCRUD:
 @pytest.mark.django_db
 class TestCartCheckout:
     def test_checkout_confirms_order_and_clears_cart(
-        self, auth_client, cart_with_items
+        self, auth_client, cart_with_one_item
     ):
         """
         POST /cart/checkout/:
-        1) return 204 No Content
-        2) confirmed order appears in /orders/ with status=CONFIRMED
+        1) return 200 OK (order moves to AWAITING_PAYMENT)
+        2) order appears in /orders/ with status=AWAITING_PAYMENT
         3) GET /cart/ returns 404
         """
-        client, cart = auth_client, cart_with_items
+        client, cart = auth_client, cart_with_one_item
         client.force_authenticate(cart.user)
 
-        # Checkout → no response body
+        # Checkout → returns 200 OK and status moves to AWAITING_PAYMENT
         resp = client.post(f"{CART_LIST}checkout/")
-        assert resp.status_code == status.HTTP_204_NO_CONTENT
+        assert resp.status_code == status.HTTP_200_OK
 
         # Verify order moved to /orders/ with correct status
         orders_resp = client.get("/api/shop/orders/")
@@ -153,7 +153,7 @@ class TestCartCheckout:
             if o["order_id"] == str(cart.order_id)
         ]
         assert confirmed, "Confirmed order not found"
-        assert confirmed[0]["status"] == Order.StatusChoices.CONFIRMED
+        assert confirmed[0]["status"] == Order.StatusChoices.AWAITING_PAYMENT
 
         # Pending cart endpoint now returns 404
         cart_resp = client.get(CART_LIST)

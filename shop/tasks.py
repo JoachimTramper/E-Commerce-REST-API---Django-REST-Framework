@@ -6,11 +6,13 @@ from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMessage, send_mail
+from django.db import transaction
+from django.db.models import F
 from django.template.loader import render_to_string
 from django.utils import timezone
 from xhtml2pdf import pisa
 
-from shop.models import Order
+from shop.models import Order, Product
 
 
 @shared_task
@@ -68,7 +70,7 @@ def send_order_email_with_invoice(order_id):
     except Order.DoesNotExist:
         return f"Order {order_id} not found."
 
-    # Render PDF from template
+    # render PDF from template
     html = render_to_string("shop/invoice.html", {"order": order})
     buffer = io.BytesIO()
     pisa_status = pisa.CreatePDF(html, dest=buffer)
@@ -197,3 +199,20 @@ def send_daily_sales_report():
     email.send()
 
     return f"Sales report sent for {start.date()}"
+
+
+@shared_task
+def release_expired_reservations():
+    now = timezone.now()
+    expired_orders = Order.objects.filter(
+        status=Order.StatusChoices.AWAITING_PAYMENT, reserved_until__lt=now
+    )
+
+    for order in expired_orders:
+        with transaction.atomic():
+            for item in order.items.all():
+                Product.objects.filter(pk=item.product_id).update(
+                    stock_reserved=F("stock_reserved") - item.quantity
+                )
+            order.status = Order.StatusChoices.CANCELLED
+            order.save()

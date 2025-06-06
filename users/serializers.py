@@ -9,6 +9,16 @@ User = get_user_model()
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    # minimal validation for address fields
+    zipcode = serializers.CharField(
+        required=True,
+        min_length=3,
+        error_messages={
+            "blank": "Zipcode can not be blank.",
+            "min_length": "Zipcode has to be at least 3 characters long.",
+        },
+    )
+
     class Meta:
         model = Address
         fields = [
@@ -46,6 +56,12 @@ class AdminAddressSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     addresses = AddressSerializer(many=True, read_only=True)
+    phone_number = serializers.RegexField(
+        regex=r"^\d+$",
+        required=False,
+        allow_blank=True,
+        error_messages={"invalid": "Phone number must be numeric."},
+    )
 
     class Meta:
         model = CustomerProfile
@@ -64,13 +80,34 @@ class AdminProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
+    # explicitly declare email as EmailField so DRF valideert at PATCH
+    email = serializers.EmailField(required=False)
+    username = serializers.CharField(required=False, allow_blank=False)
 
     class Meta:
         model = User
         fields = ["id", "email", "username", "first_name", "last_name", "profile"]
+        read_only_fields = ["id"]
 
-        # Unique name for openapi schema generation
+        # unique name for openapi schema generation
         ref_name = "AppUser"
+
+    def validate_username(self, value):
+        if value == "":
+            raise serializers.ValidationError("This field may not be blank.")
+        return value
+
+    def update(self, instance, validated_data):
+        if "email" in validated_data:
+            instance.email = validated_data["email"]
+        if "username" in validated_data:
+            instance.username = validated_data["username"]
+        # first_name and last_name are optional
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.last_name = validated_data.get("last_name", instance.last_name)
+
+        instance.save()
+        return instance
 
 
 class AdminUserSerializer(serializers.ModelSerializer):

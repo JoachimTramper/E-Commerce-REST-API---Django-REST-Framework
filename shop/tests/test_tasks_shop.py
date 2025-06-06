@@ -162,13 +162,13 @@ class TestSendDailySalesReport:
 class TestPaymentWebhook:
     def test_payment_webhook_confirms_order(self, order_factory, client, settings):
         settings.WEBHOOK_SECRET_KEY = "testkey"
-        order = order_factory(status=Order.StatusChoices.PENDING)
+        order = order_factory(status=Order.StatusChoices.AWAITING_PAYMENT)
 
         response = client.post(
             "/api/webhooks/payment/",
             {"order_id": str(order.order_id), "status": "paid"},
             content_type="application/json",
-            HTTP_X_WEBHOOK_KEY="testkey",  # ✅ correcte sleutel
+            HTTP_X_WEBHOOK_KEY="testkey",  # correct key
         )
 
         order.refresh_from_db()
@@ -183,26 +183,9 @@ class TestPaymentWebhook:
             "/api/webhooks/payment/",
             {"order_id": str(order.order_id), "status": "paid"},
             content_type="application/json",
-            HTTP_X_WEBHOOK_KEY="wrong-key",  # ❌ verkeerde sleutel
+            HTTP_X_WEBHOOK_KEY="wrong-key",  # wrong key
         )
 
         order.refresh_from_db()
         assert response.status_code == 403
         assert order.status == Order.StatusChoices.PENDING
-
-
-# @pytest.mark.django_db
-# class TestPaymentWebhook:
-#     def test_payment_webhook_confirms_order(self, order_factory, client):
-#         order = order_factory(status=Order.StatusChoices.PENDING)
-
-#         response = client.post(
-#             "/api/webhooks/payment/",
-#             {"order_id": str(order.order_id), "status": "paid"},
-#             content_type="application/json",
-#         )
-
-#         order.refresh_from_db()
-
-#         assert response.status_code == 200
-#         assert order.status == Order.StatusChoices.CONFIRMED
