@@ -1,36 +1,59 @@
-# Python bytecode & caches
+# ----------------------------------------------------------------
+# Python caches & bytecode
+# ----------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
 
+# ----------------------------------------------------------------
+# Type check / test caches
+# ----------------------------------------------------------------
+.mypy_cache/
+.pytest_cache/
+.cache_ggshield/
+
+# ----------------------------------------------------------------
 # Virtual environments
+# ----------------------------------------------------------------
 .venv/
 env/
+venv/
 
-# Django / local database & media
-db.sqlite3
-media/
-
-# Collected static assets
-staticfiles/
-
-# Environment file for secrets
-.env
-
-# IDE / Editor-config
+# ----------------------------------------------------------------
+# IDE / editor
+# ----------------------------------------------------------------
 .vscode/
-*.sublime-project
-*.sublime-workspace
 .idea/
 
-# Logs
+# ----------------------------------------------------------------
+# Local DB, uploads & logs
+# ----------------------------------------------------------------
+db.sqlite3
+media/
 *.log
-
-# Windows-specific
-Thumbs.db
-
-# Backup files
-shop/backup.py
-
-# Silk / Python profiler dumps
 *.prof
+
+# ----------------------------------------------------------------
+# Collected static & generated assets
+# ----------------------------------------------------------------
+staticfiles/
+models.dot
+
+# ----------------------------------------------------------------
+# Ephemeral test data & backups
+# ----------------------------------------------------------------
+user_credentials.csv
+shop/backup.py
+http/
+
+# ----------------------------------------------------------------
+# Environment / secrets file
+# ----------------------------------------------------------------
+.env
+
+# ----------------------------------------------------------------
+# Optional packaging artifacts
+# ----------------------------------------------------------------
+dist/
+build/
+*.egg-info/
