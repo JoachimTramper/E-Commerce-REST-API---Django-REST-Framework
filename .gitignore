@@ -43,8 +43,8 @@ models.dot
 # Ephemeral test data & backups
 # ----------------------------------------------------------------
 user_credentials.csv
+fixtures/*.json.bak
 http/
-fixtures/*.bak
 
 # ----------------------------------------------------------------
 # Environment / secrets file

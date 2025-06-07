@@ -14,3 +14,5 @@ secret:
     - "docs/swagger-ui/**"
 
     - "conftest.py"
+
+    - "fixtures/*.json.bak"
