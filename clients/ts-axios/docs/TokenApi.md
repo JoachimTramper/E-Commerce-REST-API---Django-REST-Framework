@@ -8,7 +8,7 @@ All URIs are relative to */api*
 |[**tokenRefreshCreate**](#tokenrefreshcreate) | **POST** /token/refresh/ | |
 
 # **tokenCreate**
-> TokenObtainPair tokenCreate(tokenObtainPair)
+> TokenObtainPair tokenCreate(tokenObtainPairRequest)
 
 Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
 
@@ -18,16 +18,16 @@ Takes a set of user credentials and returns an access and refresh JSON web token
 import {
     TokenApi,
     Configuration,
-    TokenObtainPair
-} from '@mijnorg/ecommerce-api-client';
+    TokenObtainPairRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new TokenApi(configuration);
 
-let tokenObtainPair: TokenObtainPair; //
+let tokenObtainPairRequest: TokenObtainPairRequest; //
 
 const { status, data } = await apiInstance.tokenCreate(
-    tokenObtainPair
+    tokenObtainPairRequest
 );
 ```
 
@@ -35,7 +35,7 @@ const { status, data } = await apiInstance.tokenCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **tokenObtainPair** | **TokenObtainPair**|  | |
+| **tokenObtainPairRequest** | **TokenObtainPairRequest**|  | |
 
 
 ### Return type
@@ -60,7 +60,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tokenRefreshCreate**
-> TokenRefresh tokenRefreshCreate(tokenRefresh)
+> TokenRefresh tokenRefreshCreate(tokenRefreshRequest)
 
 Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
 
@@ -70,16 +70,16 @@ Takes a refresh type JSON web token and returns an access type JSON web token if
 import {
     TokenApi,
     Configuration,
-    TokenRefresh
-} from '@mijnorg/ecommerce-api-client';
+    TokenRefreshRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new TokenApi(configuration);
 
-let tokenRefresh: TokenRefresh; //
+let tokenRefreshRequest: TokenRefreshRequest; //
 
 const { status, data } = await apiInstance.tokenRefreshCreate(
-    tokenRefresh
+    tokenRefreshRequest
 );
 ```
 
@@ -87,7 +87,7 @@ const { status, data } = await apiInstance.tokenRefreshCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **tokenRefresh** | **TokenRefresh**|  | |
+| **tokenRefreshRequest** | **TokenRefreshRequest**|  | |
 
 
 ### Return type

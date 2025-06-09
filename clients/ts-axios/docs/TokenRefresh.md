@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TokenRefresh } from '@mijnorg/ecommerce-api-client';
+import { TokenRefresh } from './api';
 
 const instance: TokenRefresh = {
     access,

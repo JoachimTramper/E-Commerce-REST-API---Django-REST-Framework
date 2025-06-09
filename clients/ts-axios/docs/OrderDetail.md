@@ -8,14 +8,14 @@ Name | Type | Description | Notes
 **order_id** | **string** |  | [readonly] [default to undefined]
 **order_number** | **number** |  | [readonly] [default to undefined]
 **created_at** | **string** |  | [readonly] [default to undefined]
-**status** | [**StatusEnum**](StatusEnum.md) |  | [readonly] [default to undefined]
+**status** | [**Status93bEnum**](Status93bEnum.md) |  | [readonly] [default to undefined]
 **items** | [**Array&lt;OrderItemDetail&gt;**](OrderItemDetail.md) |  | [default to undefined]
 **total_amount** | **number** |  | [readonly] [default to undefined]
 
 ## Example
 
 ```typescript
-import { OrderDetail } from '@mijnorg/ecommerce-api-client';
+import { OrderDetail } from './api';
 
 const instance: OrderDetail = {
     order_id,

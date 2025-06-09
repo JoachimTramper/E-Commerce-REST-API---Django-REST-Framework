@@ -4,12 +4,13 @@ All URIs are relative to */api*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**cartCheckout**](#cartcheckout) | **POST** /shop/cart/checkout/ | |
 |[**cartItemCreate**](#cartitemcreate) | **POST** /shop/cart/items/ | |
+|[**cartItemDelete**](#cartitemdelete) | **DELETE** /shop/cart/items/{id}/ | |
+|[**cartItemPartialUpdate**](#cartitempartialupdate) | **PATCH** /shop/cart/items/{id}/ | |
+|[**cartItemUpdate**](#cartitemupdate) | **PUT** /shop/cart/items/{id}/ | |
 |[**cartItemsList**](#cartitemslist) | **GET** /shop/cart/items/ | |
 |[**cartItemsRetrieve**](#cartitemsretrieve) | **GET** /shop/cart/items/{id}/ | |
-|[**shopCartItemsDestroy**](#shopcartitemsdestroy) | **DELETE** /shop/cart/items/{id}/ | |
-|[**shopCartItemsPartialUpdate**](#shopcartitemspartialupdate) | **PATCH** /shop/cart/items/{id}/ | |
-|[**shopCartItemsUpdate**](#shopcartitemsupdate) | **PUT** /shop/cart/items/{id}/ | |
 |[**shopCartList**](#shopcartlist) | **GET** /shop/cart/ | |
 |[**shopOrderItemsCreate**](#shoporderitemscreate) | **POST** /shop/order-items/ | |
 |[**shopOrderItemsDestroy**](#shoporderitemsdestroy) | **DELETE** /shop/order-items/{id}/ | |
@@ -17,7 +18,6 @@ All URIs are relative to */api*
 |[**shopOrderItemsPartialUpdate**](#shoporderitemspartialupdate) | **PATCH** /shop/order-items/{id}/ | |
 |[**shopOrderItemsRetrieve**](#shoporderitemsretrieve) | **GET** /shop/order-items/{id}/ | |
 |[**shopOrderItemsUpdate**](#shoporderitemsupdate) | **PUT** /shop/order-items/{id}/ | |
-|[**shopOrdersCheckoutCreate**](#shoporderscheckoutcreate) | **POST** /shop/orders/{order_id}/checkout/ | |
 |[**shopOrdersCreate**](#shoporderscreate) | **POST** /shop/orders/ | |
 |[**shopOrdersDestroy**](#shopordersdestroy) | **DELETE** /shop/orders/{order_id}/ | |
 |[**shopOrdersList**](#shoporderslist) | **GET** /shop/orders/ | |
@@ -31,8 +31,54 @@ All URIs are relative to */api*
 |[**shopProductsRetrieve**](#shopproductsretrieve) | **GET** /shop/products/{id}/ | |
 |[**shopProductsUpdate**](#shopproductsupdate) | **PUT** /shop/products/{id}/ | |
 
+# **cartCheckout**
+> cartCheckout()
+
+Reserve stock and sets status to AWAITING_PAYMENT. Returns 200 + JSON { message: … } if successful.
+
+### Example
+
+```typescript
+import {
+    ShopApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ShopApi(configuration);
+
+const { status, data } = await apiInstance.cartCheckout();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Stock reserved; you have 10 minutes to complete payment. |  -  |
+|**400** | Not enough stock / concurrency error |  -  |
+|**404** | No pending cart |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **cartItemCreate**
-> Cart cartItemCreate(orderItemCreateUpdate)
+> Cart cartItemCreate(orderItemCreateUpdateRequest)
 
 
 ### Example
@@ -41,16 +87,16 @@ All URIs are relative to */api*
 import {
     ShopApi,
     Configuration,
-    OrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
+    OrderItemCreateUpdateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
-let orderItemCreateUpdate: OrderItemCreateUpdate; //
+let orderItemCreateUpdateRequest: OrderItemCreateUpdateRequest; //
 
 const { status, data } = await apiInstance.cartItemCreate(
-    orderItemCreateUpdate
+    orderItemCreateUpdateRequest
 );
 ```
 
@@ -58,7 +104,7 @@ const { status, data } = await apiInstance.cartItemCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderItemCreateUpdate** | **OrderItemCreateUpdate**|  | |
+| **orderItemCreateUpdateRequest** | **OrderItemCreateUpdateRequest**|  | |
 
 
 ### Return type
@@ -82,6 +128,164 @@ const { status, data } = await apiInstance.cartItemCreate(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **cartItemDelete**
+> cartItemDelete()
+
+
+### Example
+
+```typescript
+import {
+    ShopApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ShopApi(configuration);
+
+let id: number; //A unique integer value identifying this order item. (default to undefined)
+
+const { status, data } = await apiInstance.cartItemDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**204** | Cart item deleted |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **cartItemPartialUpdate**
+> OrderItemDetail cartItemPartialUpdate()
+
+
+### Example
+
+```typescript
+import {
+    ShopApi,
+    Configuration,
+    PatchedOrderItemCreateUpdateRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ShopApi(configuration);
+
+let id: number; //A unique integer value identifying this order item. (default to undefined)
+let patchedOrderItemCreateUpdateRequest: PatchedOrderItemCreateUpdateRequest; // (optional)
+
+const { status, data } = await apiInstance.cartItemPartialUpdate(
+    id,
+    patchedOrderItemCreateUpdateRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **patchedOrderItemCreateUpdateRequest** | **PatchedOrderItemCreateUpdateRequest**|  | |
+| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
+
+
+### Return type
+
+**OrderItemDetail**
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **cartItemUpdate**
+> OrderItemDetail cartItemUpdate(orderItemCreateUpdateRequest)
+
+
+### Example
+
+```typescript
+import {
+    ShopApi,
+    Configuration,
+    OrderItemCreateUpdateRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ShopApi(configuration);
+
+let id: number; //A unique integer value identifying this order item. (default to undefined)
+let orderItemCreateUpdateRequest: OrderItemCreateUpdateRequest; //
+
+const { status, data } = await apiInstance.cartItemUpdate(
+    id,
+    orderItemCreateUpdateRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **orderItemCreateUpdateRequest** | **OrderItemCreateUpdateRequest**|  | |
+| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
+
+
+### Return type
+
+**OrderItemDetail**
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **cartItemsList**
 > PaginatedOrderItemListList cartItemsList()
 
@@ -92,7 +296,7 @@ const { status, data } = await apiInstance.cartItemCreate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -148,7 +352,7 @@ const { status, data } = await apiInstance.cartItemsList(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -188,164 +392,6 @@ const { status, data } = await apiInstance.cartItemsRetrieve(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **shopCartItemsDestroy**
-> shopCartItemsDestroy()
-
-
-### Example
-
-```typescript
-import {
-    ShopApi,
-    Configuration
-} from '@mijnorg/ecommerce-api-client';
-
-const configuration = new Configuration();
-const apiInstance = new ShopApi(configuration);
-
-let id: number; //A unique integer value identifying this order item. (default to undefined)
-
-const { status, data } = await apiInstance.shopCartItemsDestroy(
-    id
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**204** | No response body |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **shopCartItemsPartialUpdate**
-> OrderItemCreateUpdate shopCartItemsPartialUpdate()
-
-
-### Example
-
-```typescript
-import {
-    ShopApi,
-    Configuration,
-    PatchedOrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
-
-const configuration = new Configuration();
-const apiInstance = new ShopApi(configuration);
-
-let id: number; //A unique integer value identifying this order item. (default to undefined)
-let patchedOrderItemCreateUpdate: PatchedOrderItemCreateUpdate; // (optional)
-
-const { status, data } = await apiInstance.shopCartItemsPartialUpdate(
-    id,
-    patchedOrderItemCreateUpdate
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **patchedOrderItemCreateUpdate** | **PatchedOrderItemCreateUpdate**|  | |
-| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
-
-
-### Return type
-
-**OrderItemCreateUpdate**
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **shopCartItemsUpdate**
-> OrderItemCreateUpdate shopCartItemsUpdate(orderItemCreateUpdate)
-
-
-### Example
-
-```typescript
-import {
-    ShopApi,
-    Configuration,
-    OrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
-
-const configuration = new Configuration();
-const apiInstance = new ShopApi(configuration);
-
-let id: number; //A unique integer value identifying this order item. (default to undefined)
-let orderItemCreateUpdate: OrderItemCreateUpdate; //
-
-const { status, data } = await apiInstance.shopCartItemsUpdate(
-    id,
-    orderItemCreateUpdate
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **orderItemCreateUpdate** | **OrderItemCreateUpdate**|  | |
-| **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
-
-
-### Return type
-
-**OrderItemCreateUpdate**
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **shopCartList**
 > Array<Cart> shopCartList()
 
@@ -357,7 +403,7 @@ Retrieve the current user\'s pending cart
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -392,7 +438,7 @@ This endpoint does not have any parameters.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **shopOrderItemsCreate**
-> OrderItemDetail shopOrderItemsCreate(orderItemCreateUpdate)
+> OrderItemDetail shopOrderItemsCreate(orderItemCreateUpdateRequest)
 
 - Admin users: full CRUD on all order items. - Non-staff users:     • list/retrieve: only items from their own orders.     • create: only if they have at least one PENDING order.     • update/partial_update: only on items whose order status == PENDING.     • delete: only on items whose order status == PENDING.
 
@@ -402,16 +448,16 @@ This endpoint does not have any parameters.
 import {
     ShopApi,
     Configuration,
-    OrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
+    OrderItemCreateUpdateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
-let orderItemCreateUpdate: OrderItemCreateUpdate; //
+let orderItemCreateUpdateRequest: OrderItemCreateUpdateRequest; //
 
 const { status, data } = await apiInstance.shopOrderItemsCreate(
-    orderItemCreateUpdate
+    orderItemCreateUpdateRequest
 );
 ```
 
@@ -419,7 +465,7 @@ const { status, data } = await apiInstance.shopOrderItemsCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderItemCreateUpdate** | **OrderItemCreateUpdate**|  | |
+| **orderItemCreateUpdateRequest** | **OrderItemCreateUpdateRequest**|  | |
 
 
 ### Return type
@@ -457,7 +503,7 @@ const { status, data } = await apiInstance.shopOrderItemsCreate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -511,13 +557,13 @@ const { status, data } = await apiInstance.shopOrderItemsDestroy(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let order: string; // (optional) (default to undefined)
-let orderStatus: 'Cancelled' | 'Confirmed' | 'Delivered' | 'Pending' | 'Shipped'; //* `Pending` - Pending * `Confirmed` - Confirmed * `Shipped` - Shipped * `Delivered` - Delivered * `Cancelled` - Cancelled (optional) (default to undefined)
+let orderStatus: 'AwaitingPayment' | 'Cancelled' | 'Confirmed' | 'Delivered' | 'Pending' | 'Shipped'; //* `Pending` - Pending * `AwaitingPayment` - Awaiting Payment * `Confirmed` - Confirmed * `Shipped` - Shipped * `Delivered` - Delivered * `Cancelled` - Cancelled (optional) (default to undefined)
 let ordering: string; //Which field to use when ordering the results. (optional) (default to undefined)
 let page: number; //A page number within the paginated result set. (optional) (default to undefined)
 let pageSize: number; //Number of results to return per page. (optional) (default to undefined)
@@ -544,7 +590,7 @@ const { status, data } = await apiInstance.shopOrderItemsList(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **order** | [**string**] |  | (optional) defaults to undefined|
-| **orderStatus** | [**&#39;Cancelled&#39; | &#39;Confirmed&#39; | &#39;Delivered&#39; | &#39;Pending&#39; | &#39;Shipped&#39;**]**Array<&#39;Cancelled&#39; &#124; &#39;Confirmed&#39; &#124; &#39;Delivered&#39; &#124; &#39;Pending&#39; &#124; &#39;Shipped&#39;>** | * &#x60;Pending&#x60; - Pending * &#x60;Confirmed&#x60; - Confirmed * &#x60;Shipped&#x60; - Shipped * &#x60;Delivered&#x60; - Delivered * &#x60;Cancelled&#x60; - Cancelled | (optional) defaults to undefined|
+| **orderStatus** | [**&#39;AwaitingPayment&#39; | &#39;Cancelled&#39; | &#39;Confirmed&#39; | &#39;Delivered&#39; | &#39;Pending&#39; | &#39;Shipped&#39;**]**Array<&#39;AwaitingPayment&#39; &#124; &#39;Cancelled&#39; &#124; &#39;Confirmed&#39; &#124; &#39;Delivered&#39; &#124; &#39;Pending&#39; &#124; &#39;Shipped&#39;>** | * &#x60;Pending&#x60; - Pending * &#x60;AwaitingPayment&#x60; - Awaiting Payment * &#x60;Confirmed&#x60; - Confirmed * &#x60;Shipped&#x60; - Shipped * &#x60;Delivered&#x60; - Delivered * &#x60;Cancelled&#x60; - Cancelled | (optional) defaults to undefined|
 | **ordering** | [**string**] | Which field to use when ordering the results. | (optional) defaults to undefined|
 | **page** | [**number**] | A page number within the paginated result set. | (optional) defaults to undefined|
 | **pageSize** | [**number**] | Number of results to return per page. | (optional) defaults to undefined|
@@ -589,18 +635,18 @@ const { status, data } = await apiInstance.shopOrderItemsList(
 import {
     ShopApi,
     Configuration,
-    PatchedOrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
+    PatchedOrderItemCreateUpdateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let id: number; //A unique integer value identifying this order item. (default to undefined)
-let patchedOrderItemCreateUpdate: PatchedOrderItemCreateUpdate; // (optional)
+let patchedOrderItemCreateUpdateRequest: PatchedOrderItemCreateUpdateRequest; // (optional)
 
 const { status, data } = await apiInstance.shopOrderItemsPartialUpdate(
     id,
-    patchedOrderItemCreateUpdate
+    patchedOrderItemCreateUpdateRequest
 );
 ```
 
@@ -608,7 +654,7 @@ const { status, data } = await apiInstance.shopOrderItemsPartialUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **patchedOrderItemCreateUpdate** | **PatchedOrderItemCreateUpdate**|  | |
+| **patchedOrderItemCreateUpdateRequest** | **PatchedOrderItemCreateUpdateRequest**|  | |
 | **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
 
 
@@ -647,7 +693,7 @@ const { status, data } = await apiInstance.shopOrderItemsPartialUpdate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -691,7 +737,7 @@ const { status, data } = await apiInstance.shopOrderItemsRetrieve(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **shopOrderItemsUpdate**
-> OrderItemDetail shopOrderItemsUpdate(orderItemCreateUpdate)
+> OrderItemDetail shopOrderItemsUpdate(orderItemCreateUpdateRequest)
 
 - Admin users: full CRUD on all order items. - Non-staff users:     • list/retrieve: only items from their own orders.     • create: only if they have at least one PENDING order.     • update/partial_update: only on items whose order status == PENDING.     • delete: only on items whose order status == PENDING.
 
@@ -701,18 +747,18 @@ const { status, data } = await apiInstance.shopOrderItemsRetrieve(
 import {
     ShopApi,
     Configuration,
-    OrderItemCreateUpdate
-} from '@mijnorg/ecommerce-api-client';
+    OrderItemCreateUpdateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let id: number; //A unique integer value identifying this order item. (default to undefined)
-let orderItemCreateUpdate: OrderItemCreateUpdate; //
+let orderItemCreateUpdateRequest: OrderItemCreateUpdateRequest; //
 
 const { status, data } = await apiInstance.shopOrderItemsUpdate(
     id,
-    orderItemCreateUpdate
+    orderItemCreateUpdateRequest
 );
 ```
 
@@ -720,7 +766,7 @@ const { status, data } = await apiInstance.shopOrderItemsUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderItemCreateUpdate** | **OrderItemCreateUpdate**|  | |
+| **orderItemCreateUpdateRequest** | **OrderItemCreateUpdateRequest**|  | |
 | **id** | [**number**] | A unique integer value identifying this order item. | defaults to undefined|
 
 
@@ -748,66 +794,8 @@ const { status, data } = await apiInstance.shopOrderItemsUpdate(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **shopOrdersCheckoutCreate**
-> OrderDetail shopOrdersCheckoutCreate(orderCreate)
-
-- Admin users: full CRUD on all orders. - Non-staff users:     • list/retrieve: only their own orders.     • create: may create orders for themselves.     • update/partial_update: only on their own orders when status == PENDING.     • delete: only on their own orders when status == PENDING.
-
-### Example
-
-```typescript
-import {
-    ShopApi,
-    Configuration,
-    OrderCreate
-} from '@mijnorg/ecommerce-api-client';
-
-const configuration = new Configuration();
-const apiInstance = new ShopApi(configuration);
-
-let orderId: string; //A UUID string identifying this order. (default to undefined)
-let orderCreate: OrderCreate; //
-
-const { status, data } = await apiInstance.shopOrdersCheckoutCreate(
-    orderId,
-    orderCreate
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **orderCreate** | **OrderCreate**|  | |
-| **orderId** | [**string**] | A UUID string identifying this order. | defaults to undefined|
-
-
-### Return type
-
-**OrderDetail**
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | Retrieve order |  -  |
-|**201** | Create order |  -  |
-|**400** | Validation error |  -  |
-|**404** | Not found |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **shopOrdersCreate**
-> OrderDetail shopOrdersCreate(orderCreate)
+> OrderDetail shopOrdersCreate(orderCreateRequest)
 
 - Admin users: full CRUD on all orders. - Non-staff users:     • list/retrieve: only their own orders.     • create: may create orders for themselves.     • update/partial_update: only on their own orders when status == PENDING.     • delete: only on their own orders when status == PENDING.
 
@@ -817,16 +805,16 @@ const { status, data } = await apiInstance.shopOrdersCheckoutCreate(
 import {
     ShopApi,
     Configuration,
-    OrderCreate
-} from '@mijnorg/ecommerce-api-client';
+    OrderCreateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
-let orderCreate: OrderCreate; //
+let orderCreateRequest: OrderCreateRequest; //
 
 const { status, data } = await apiInstance.shopOrdersCreate(
-    orderCreate
+    orderCreateRequest
 );
 ```
 
@@ -834,7 +822,7 @@ const { status, data } = await apiInstance.shopOrdersCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderCreate** | **OrderCreate**|  | |
+| **orderCreateRequest** | **OrderCreateRequest**|  | |
 
 
 ### Return type
@@ -872,7 +860,7 @@ const { status, data } = await apiInstance.shopOrdersCreate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -926,7 +914,7 @@ const { status, data } = await apiInstance.shopOrdersDestroy(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -1004,18 +992,18 @@ const { status, data } = await apiInstance.shopOrdersList(
 import {
     ShopApi,
     Configuration,
-    PatchedOrderCreate
-} from '@mijnorg/ecommerce-api-client';
+    PatchedOrderCreateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let orderId: string; //A UUID string identifying this order. (default to undefined)
-let patchedOrderCreate: PatchedOrderCreate; // (optional)
+let patchedOrderCreateRequest: PatchedOrderCreateRequest; // (optional)
 
 const { status, data } = await apiInstance.shopOrdersPartialUpdate(
     orderId,
-    patchedOrderCreate
+    patchedOrderCreateRequest
 );
 ```
 
@@ -1023,7 +1011,7 @@ const { status, data } = await apiInstance.shopOrdersPartialUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **patchedOrderCreate** | **PatchedOrderCreate**|  | |
+| **patchedOrderCreateRequest** | **PatchedOrderCreateRequest**|  | |
 | **orderId** | [**string**] | A UUID string identifying this order. | defaults to undefined|
 
 
@@ -1062,7 +1050,7 @@ const { status, data } = await apiInstance.shopOrdersPartialUpdate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -1106,7 +1094,7 @@ const { status, data } = await apiInstance.shopOrdersRetrieve(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **shopOrdersUpdate**
-> OrderDetail shopOrdersUpdate(orderCreate)
+> OrderDetail shopOrdersUpdate(orderCreateRequest)
 
 - Admin users: full CRUD on all orders. - Non-staff users:     • list/retrieve: only their own orders.     • create: may create orders for themselves.     • update/partial_update: only on their own orders when status == PENDING.     • delete: only on their own orders when status == PENDING.
 
@@ -1116,18 +1104,18 @@ const { status, data } = await apiInstance.shopOrdersRetrieve(
 import {
     ShopApi,
     Configuration,
-    OrderCreate
-} from '@mijnorg/ecommerce-api-client';
+    OrderCreateRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let orderId: string; //A UUID string identifying this order. (default to undefined)
-let orderCreate: OrderCreate; //
+let orderCreateRequest: OrderCreateRequest; //
 
 const { status, data } = await apiInstance.shopOrdersUpdate(
     orderId,
-    orderCreate
+    orderCreateRequest
 );
 ```
 
@@ -1135,7 +1123,7 @@ const { status, data } = await apiInstance.shopOrdersUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderCreate** | **OrderCreate**|  | |
+| **orderCreateRequest** | **OrderCreateRequest**|  | |
 | **orderId** | [**string**] | A UUID string identifying this order. | defaults to undefined|
 
 
@@ -1164,7 +1152,7 @@ const { status, data } = await apiInstance.shopOrdersUpdate(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **shopProductsCreate**
-> Product shopProductsCreate(product)
+> Product shopProductsCreate(productRequest)
 
 
 ### Example
@@ -1173,16 +1161,16 @@ const { status, data } = await apiInstance.shopOrdersUpdate(
 import {
     ShopApi,
     Configuration,
-    Product
-} from '@mijnorg/ecommerce-api-client';
+    ProductRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
-let product: Product; //
+let productRequest: ProductRequest; //
 
 const { status, data } = await apiInstance.shopProductsCreate(
-    product
+    productRequest
 );
 ```
 
@@ -1190,7 +1178,7 @@ const { status, data } = await apiInstance.shopProductsCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **product** | **Product**|  | |
+| **productRequest** | **ProductRequest**|  | |
 
 
 ### Return type
@@ -1227,7 +1215,7 @@ const { status, data } = await apiInstance.shopProductsCreate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -1280,7 +1268,7 @@ const { status, data } = await apiInstance.shopProductsDestroy(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -1354,18 +1342,18 @@ const { status, data } = await apiInstance.shopProductsList(
 import {
     ShopApi,
     Configuration,
-    PatchedProduct
-} from '@mijnorg/ecommerce-api-client';
+    PatchedProductRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let id: number; //A unique integer value identifying this product. (default to undefined)
-let patchedProduct: PatchedProduct; // (optional)
+let patchedProductRequest: PatchedProductRequest; // (optional)
 
 const { status, data } = await apiInstance.shopProductsPartialUpdate(
     id,
-    patchedProduct
+    patchedProductRequest
 );
 ```
 
@@ -1373,7 +1361,7 @@ const { status, data } = await apiInstance.shopProductsPartialUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **patchedProduct** | **PatchedProduct**|  | |
+| **patchedProductRequest** | **PatchedProductRequest**|  | |
 | **id** | [**number**] | A unique integer value identifying this product. | defaults to undefined|
 
 
@@ -1411,7 +1399,7 @@ const { status, data } = await apiInstance.shopProductsPartialUpdate(
 import {
     ShopApi,
     Configuration
-} from '@mijnorg/ecommerce-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
@@ -1455,7 +1443,7 @@ const { status, data } = await apiInstance.shopProductsRetrieve(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **shopProductsUpdate**
-> Product shopProductsUpdate(product)
+> Product shopProductsUpdate(productRequest)
 
 
 ### Example
@@ -1464,18 +1452,18 @@ const { status, data } = await apiInstance.shopProductsRetrieve(
 import {
     ShopApi,
     Configuration,
-    Product
-} from '@mijnorg/ecommerce-api-client';
+    ProductRequest
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new ShopApi(configuration);
 
 let id: number; //A unique integer value identifying this product. (default to undefined)
-let product: Product; //
+let productRequest: ProductRequest; //
 
 const { status, data } = await apiInstance.shopProductsUpdate(
     id,
-    product
+    productRequest
 );
 ```
 
@@ -1483,7 +1471,7 @@ const { status, data } = await apiInstance.shopProductsUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **product** | **Product**|  | |
+| **productRequest** | **ProductRequest**|  | |
 | **id** | [**number**] | A unique integer value identifying this product. | defaults to undefined|
 
 

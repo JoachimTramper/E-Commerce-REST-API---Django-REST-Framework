@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Cart } from '@mijnorg/ecommerce-api-client';
+import { Cart } from './api';
 
 const instance: Cart = {
     order_id,
