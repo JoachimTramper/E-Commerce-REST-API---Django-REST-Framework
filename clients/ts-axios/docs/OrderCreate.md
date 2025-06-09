@@ -6,13 +6,13 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **order_id** | **string** |  | [readonly] [default to undefined]
-**status** | [**StatusEnum**](StatusEnum.md) |  | [optional] [default to undefined]
+**status** | [**Status93bEnum**](Status93bEnum.md) |  | [optional] [default to undefined]
 **items** | [**Array&lt;OrderItemDetail&gt;**](OrderItemDetail.md) |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { OrderCreate } from '@mijnorg/ecommerce-api-client';
+import { OrderCreate } from './api';
 
 const instance: OrderCreate = {
     order_id,

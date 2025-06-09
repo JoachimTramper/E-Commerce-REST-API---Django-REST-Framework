@@ -5,19 +5,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** |  | [default to undefined]
-**password** | **string** |  | [default to undefined]
 **access** | **string** |  | [readonly] [default to undefined]
 **refresh** | **string** |  | [readonly] [default to undefined]
 
 ## Example
 
 ```typescript
-import { TokenObtainPair } from '@mijnorg/ecommerce-api-client';
+import { TokenObtainPair } from './api';
 
 const instance: TokenObtainPair = {
-    email,
-    password,
     access,
     refresh,
 };

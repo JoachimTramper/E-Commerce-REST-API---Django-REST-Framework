@@ -2,11 +2,36 @@
 
 An API built with Django REST Framework to support an e-commerce platform. Key features include:
 
-- CRUD operations for products, orders, and users
-- JWT authentication
-- Caching? Throttling?
-- Live Swagger-UI documentation with **Try it out** buttons
-- Auto-generated TypeScript-Axios client SDK
+- **Robust Cart & Checkout Flow**
+  – Atomically reserves stock on checkout (`AWAITING_PAYMENT`) with a 10-minute hold.
+  – Finalizes stock and clears reservations upon successful payment via webhook.
+
+- **Secure Webhook Integration**
+  – Protected by a custom header (`X-Webhook-Key`).
+  – Accepts JSON payload (`order_id`, `status`) → updates order to `CONFIRMED` and triggers invoice email.
+
+- **End-to-End Test Coverage**
+  – Comprehensive pytest suite: unit, integration, and end-to-end tests, including race-condition scenarios and side-effect mocks.
+  – CI pipeline (GitHub Actions) with linting, security scans (GitGuardian), test runs, and automated deploys.
+
+- **OpenAPI & Swagger-UI Documentation**
+  – Live “Try it out” API docs with request/response examples.
+  – Auto-generated TypeScript-Axios SDK in `clients/ts-axios`.
+
+- **JWT Authentication with Optional 2FA**
+  – Email/password login at `POST /api/auth/jwt/create/`.
+  – Optional TOTP 2FA flows: setup, verify, and disable.
+
+- **Django Best Practices**
+  – User signals for welcome emails and TOTP key validation.
+  – Built-in caching, throttling, permissions, and filter/search support.
+
+- **Visual Data Model**
+  – Generated via `django-extensions`’ `graph_models` (output: `models.dot`; render with Graphviz).
+
+- **Production-Ready Deployment**
+  – Docker Compose stack (Django + Gunicorn, PostgreSQL, Redis, Celery, Celery Beat).
+  – Railway start command: runs `python manage.py migrate --noinput` and `python manage.py collectstatic --noinput`, then launches Gunicorn for zero-downtime deploys.
 
 ## Repository Structure
 
@@ -35,7 +60,7 @@ An API built with Django REST Framework to support an e-commerce platform. Key f
    ```bash
    python -m venv .venv
    # On Windows (PowerShell):
-   . .venv/Scripts/Activate.ps1
+   . .venv/Scripts/activate
    # On Unix/macOS:
    source .venv/bin/activate
    ```
@@ -53,7 +78,7 @@ An API built with Django REST Framework to support an e-commerce platform. Key f
    python manage.py runserver
    ```
 
-The development server runs at `http://127.0.0.1:8000/` and your interactive docs are available at `http://127.0.0.1:8000/api/docs/`.
+The development server runs at `http://127.0.0.1:8000/` and the interactive docs are available at `http://127.0.0.1:8000/api/docs/`.
 
 ## Live Production
 
@@ -67,19 +92,19 @@ https://web-production-7c555.up.railway.app
 
 Use these test credentials to authenticate in Swagger-UI or via the client SDK:
 
-| Username                                             | Password     |
-| ---------------------------------------------------- | ------------ |
-| [mirandadennis@example.com](mailto:demo@example.com) | yjffdaMUWuCl |
+| Email                                       | Password   |
+| ------------------------------------------- | ---------- |
+| [user@example.com](mailto:user@example.com) | 0XorQ5HMhh |
 
-Obtain a JWT token by POSTing to `/api/token/`:
+Obtain a JWT token by POSTing to `/api/auth/jwt/create/`:
 
 ```bash
-POST https://web-production-7c555.up.railway.app/api/token/
+POST https://web-production-7c555.up.railway.app/api/auth/jwt/create/
 Content-Type: application/json
 
 {
-  "username": "demo@example.com",
-  "password": "example_password"
+  "email": "user@example.com",
+  "password": "0XorQ5HMhh"
 }
 ```
 
@@ -106,7 +131,7 @@ npm run build
 ### Usage Example
 
 ```ts
-import { CartApi, Configuration } from "@mijnorg/ecommerce-api-client";
+import { CartApi, Configuration } from "@joachimtramper/ecommerce-api-client";
 
 const api = new CartApi(
   new Configuration({ basePath: "https://web-production-7c555.up.railway.app" })
@@ -163,89 +188,3 @@ Celery and Celery Beat run in separate containers and process tasks using Redis 
 > Django runs with `DEBUG=True` by default in Docker. Auto-cancellation of orders is skipped during development.
 
 ---
-
-### Two-Factor Authentication (2FA)
-
-This API supports optional Time-based One-Time Password (TOTP) 2FA on top of JWT auth.
-
-1. **Login (with 2FA flag)**
-
-POST /api/users/auth/jwt/create/
-
-Body (JSON)
-
-{
-"email": "user@example.com",
-"password": "password"
-}
-
-Response 200
-
-{
-"refresh": "<refresh_token>",
-"access": "<access_token>",
-"has_2fa": true|false
-}
-
-2. **2FA Setup**
-
-GET /api/users/2fa/setup/
-
-Headers:
-
-Authorization: Bearer <access_token>
-
-Response 200
-
-{
-"qr_code": "<SVG or IMG string>",
-"secret": "<Base32 string>"
-}
-
-3. **2FA Verify**
-
-POST /api/users/2fa/verify/
-
-Headers:
-
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-Body:
-
-{ "token": "123456" }
-
-Response:
-
-204 No Content on success
-
-400 Bad Request with
-
-{ "token": "Invalid code" }
-
-or
-
-{ "detail": "No setup in progress" }
-
-4. **2FA Disable**
-
-DELETE /api/users/2fa/
-
-Headers:
-
-Authorization: Bearer <access_token>
-
-Response 204 (no body)
-
-5. **Enforcement on Protected Routes**
-
-For all other endpoints under /api/users/..., if has_2fa was true in your login response, every request must include both:
-
-Authorization: Bearer <access_token>
-X-2FA-Token: <6-digit TOTP code>
-
-Requests missing or presenting an invalid TOTP code will return 401 Unauthorized.
-
----
-
-_End-to-end demo: code, live backend, interactive docs, and client SDK._

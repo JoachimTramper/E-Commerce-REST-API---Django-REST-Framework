@@ -14,12 +14,11 @@ Name | Type | Description | Notes
 **country** | **string** |  | [default to undefined]
 **is_billing** | **boolean** |  | [optional] [default to undefined]
 **is_shipping** | **boolean** |  | [optional] [default to undefined]
-**profile** | **number** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { Address } from '@mijnorg/ecommerce-api-client';
+import { Address } from './api';
 
 const instance: Address = {
     id,
@@ -31,7 +30,6 @@ const instance: Address = {
     country,
     is_billing,
     is_shipping,
-    profile,
 };
 ```
 

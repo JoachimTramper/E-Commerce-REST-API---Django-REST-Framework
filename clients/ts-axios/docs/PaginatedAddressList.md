@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PaginatedAddressList } from '@mijnorg/ecommerce-api-client';
+import { PaginatedAddressList } from './api';
 
 const instance: PaginatedAddressList = {
     count,

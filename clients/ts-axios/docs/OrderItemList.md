@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { OrderItemList } from '@mijnorg/ecommerce-api-client';
+import { OrderItemList } from './api';
 
 const instance: OrderItemList = {
     id,
