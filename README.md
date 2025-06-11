@@ -179,8 +179,6 @@ api
   - `DEBUG=False`
   - `DATABASE_URL` (if using PostgreSQL plugin)
 
----
-
 ## Local Development with Docker
 
 This project includes a complete Docker-based setup to run the full backend stack locally in a production-like environment. Using `docker-compose`, you can launch:
@@ -213,5 +211,3 @@ docker exec -it ecommerce-api-web-1 python manage.py createsuperuser
 Celery and Celery Beat run in separate containers and process tasks using Redis as a message broker. Tasks like email reminders, daily reports, and cleanup jobs are automatically triggered on schedule.
 
 > Django runs with `DEBUG=True` by default in Docker. Auto-cancellation of orders is skipped during development.
-
----
