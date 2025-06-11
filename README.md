@@ -3,48 +3,60 @@
 An API built with Django REST Framework to support an e-commerce platform. Key features include:
 
 - **Robust Cart & Checkout Flow**
+
   – Atomically reserves stock on checkout (`AWAITING_PAYMENT`) with a 10-minute hold.
   – Finalizes stock and clears reservations upon successful payment via webhook.
 
 - **Secure Webhook Integration**
+
   – Protected by a custom header (`X-Webhook-Key`).
   – Accepts JSON payload (`order_id`, `status`) → updates order to `CONFIRMED` and triggers invoice email.
 
 - **End-to-End Test Coverage**
+
   – Comprehensive pytest suite: unit, integration, and end-to-end tests, including race-condition scenarios and side-effect mocks.
   – CI pipeline (GitHub Actions) with linting, security scans (GitGuardian), test runs, and automated deploys.
 
 - **OpenAPI & Swagger-UI Documentation**
+
   – Live “Try it out” API docs with request/response examples.
   – Auto-generated TypeScript-Axios SDK in `clients/ts-axios`.
 
 - **JWT Authentication with Optional 2FA**
+
   – Email/password login at `POST /api/auth/jwt/create/`.
   – Optional TOTP 2FA flows: setup, verify, and disable.
   – Token blacklisting for immediate revocation of compromised refresh tokens.
 
 - **Out-of-the-Box User Management**
+
   – Djoser-driven registration, activation, password reset, and user endpoints.
 
 - **Django Best Practices**
+
   – User signals for welcome emails and TOTP key validation.
   – Built-in caching, throttling, permissions, and filter/search support.
   – Request/response profiling via Django Silk in development.
 
 - **Visual Data Model**
+
   – Generated via `django-extensions`’ `graph_models` (output: `models.dot`; render with Graphviz).
 
 - **Periodic Tasks**
+
   – Managed with `django-celery-beat` for scheduling background jobs (e.g. reminders, cleanup).
 
 - **Transactional Email via SendGrid**
+
   – All user-facing emails (welcome, password reset, invoices) sent asynchronously through SendGrid with retry logic via Celery.
 
 - **Error Monitoring & Audit Trails**
+
   – Integrated with Sentry for real-time error tracking and performance monitoring.
   – Django-Simple-History records model changes for full auditability.
 
 - **Production-Ready Deployment**
+
   – Docker Compose stack (Django + Gunicorn, PostgreSQL, Redis, Celery, Celery Beat).
   – Railway start command: runs `python manage.py migrate --noinput` and `python manage.py collectstatic --noinput`, then launches Gunicorn for zero-downtime deploys.
 
