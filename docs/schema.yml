@@ -4675,5 +4675,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
 servers:
+- url: https://web-production-7c555.up.railway.app/api
+  description: Production API on Railway
 - url: /api
   description: API base path

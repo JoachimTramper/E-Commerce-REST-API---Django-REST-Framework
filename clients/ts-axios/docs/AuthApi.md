@@ -1,6 +1,6 @@
 # AuthApi
 
-All URIs are relative to */api*
+All URIs are relative to *https://web-production-7c555.up.railway.app/api*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
