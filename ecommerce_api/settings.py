@@ -360,7 +360,7 @@ else:
     EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
     EMAIL_HOST_USER = os.getenv("EMAIL_USER")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@ecommerceapi.com")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "joachimtramper@gmail.com")
     SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 # Silk settings
