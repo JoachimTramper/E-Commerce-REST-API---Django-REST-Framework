@@ -3649,7 +3649,7 @@ components:
           type: integer
         phone_number:
           type: string
-          maxLength: 20
+          maxLength: 30
         date_of_birth:
           type: string
           format: date
@@ -3664,7 +3664,7 @@ components:
           type: integer
         phone_number:
           type: string
-          maxLength: 20
+          maxLength: 30
         date_of_birth:
           type: string
           format: date
@@ -4233,7 +4233,7 @@ components:
           type: integer
         phone_number:
           type: string
-          maxLength: 20
+          maxLength: 30
         date_of_birth:
           type: string
           format: date
@@ -4671,5 +4671,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
 servers:
+- url: https://web-production-7c555.up.railway.app/api
+  description: Production API on Railway
 - url: /api
   description: API base path

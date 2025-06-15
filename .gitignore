@@ -10,7 +10,7 @@ __pycache__/
 # ----------------------------------------------------------------
 .mypy_cache/
 .pytest_cache/
-.cache_ggshield/
+.cache_ggshield
 
 # ----------------------------------------------------------------
 # Virtual environments

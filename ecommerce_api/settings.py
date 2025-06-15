@@ -243,6 +243,12 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": r"/api",
     "SCHEMA_PATH_PREFIX_TRIM": True,
     "SERVERS": [
+        # Production server on Railway
+        {
+            "url": "https://web-production-7c555.up.railway.app/api",
+            "description": "Production API on Railway",
+        },
+        # Local development server
         {"url": "/api", "description": "API base path"},
     ],
     "tagsSorter": "alpha",
