@@ -71,7 +71,7 @@ def send_order_email_with_invoice(order_id):
         return f"Order {order_id} not found."
 
     # render PDF from template
-    html = render_to_string("shop/invoice.html", {"order": order})
+    html = render_to_string("shop/email/invoice.html", {"order": order})
     buffer = io.BytesIO()
     pisa_status = pisa.CreatePDF(html, dest=buffer)
 
@@ -80,21 +80,16 @@ def send_order_email_with_invoice(order_id):
 
     buffer.seek(0)
 
-    # Compose email
-    subject = f"Your Order #{order.order_number} Confirmation & Invoice"
-    message = (
-        f"Hello {order.user.first_name},\n\n"
-        f"Thank you for your order #{order.order_number}.\n"
-        f"Please find your invoice attached.\n\n"
-        f"Kind regards,\n"
-        f"The Team"
-    )
+    # render HTML email body
+    message = render_to_string("shop/email/order_confirmation.html", {"order": order})
+
     email = EmailMessage(
-        subject=subject,
+        subject=f"Your Order #{order.order_number} Confirmation & Invoice",
         body=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[order.user.email],
     )
+    email.content_subtype = "html"
     email.attach("invoice.pdf", buffer.read(), "application/pdf")
     email.send()
 

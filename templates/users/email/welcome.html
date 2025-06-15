@@ -1,0 +1,14 @@
+{% block subject %}
+Welcome to EcommerceAPI!
+{% endblock subject %}
+
+{% block text_body %}
+Hi {{ user.username }},
+
+Thanks for joining us at EcommerceAPI!
+You can log in at {{ protocol }}://{{ domain }}/login
+{% endblock text_body %}
+
+{% block html_body %}
+  {% include "users/email/welcome_body.html" %}
+{% endblock html_body %}
