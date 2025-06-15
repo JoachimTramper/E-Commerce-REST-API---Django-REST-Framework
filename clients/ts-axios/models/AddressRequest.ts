@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Address = {
-    readonly id: number;
+export type AddressRequest = {
     /**
      * e.g. 'Home', 'Work'
      */

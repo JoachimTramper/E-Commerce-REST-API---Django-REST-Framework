@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { OrderItemDetail } from './OrderItemDetail';
-export type Cart = {
+import type { Status93bEnum } from './Status93bEnum';
+export type OrderCreate = {
     readonly order_id: string;
-    readonly created_at: string;
-    readonly items: Array<OrderItemDetail>;
-    readonly total_amount: number;
+    status?: Status93bEnum;
+    items: Array<OrderItemDetail>;
 };
 

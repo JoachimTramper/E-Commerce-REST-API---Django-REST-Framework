@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Order Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px;
+        background: #fff;
+        color: #333;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+      }
+
+      th, td {
+        padding: 10px;
+        border: 1px solid #ccc;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      .total {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Order Invoice #{{ order.order_number }}</h1>
+    <p>
+      <strong>Customer:</strong>
+      {% if order.user.first_name and order.user.last_name %}
+        {{ order.user.first_name }} {{ order.user.last_name }}
+      {% elif order.user.first_name %}
+        {{ order.user.first_name }}
+      {% elif order.user.last_name %}
+        {{ order.user.last_name }}
+      {% else %}
+        {{ order.user.username }}
+      {% endif %}
+    </p>
+    <p><strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price (each)</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>€{{ item.price|floatformat:2 }}</td>
+          <td>€{{ item.item_subtotal|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p><strong>Total:</strong> €{{ order.total_amount|floatformat:2 }}</p>
+  </body>
+</html>

@@ -21,6 +21,25 @@ class TestUserRegistrationValidation:
         assert "email" in resp.data
         assert any("valid email" in str(msg).lower() for msg in resp.data["email"])
 
+    def test_email_already_exists_returns_400(self, api_client):
+        User.objects.create_user(
+            email="existing@example.com",
+            username="existinguser",
+            password="SafePass123!",
+        )
+
+        payload = {
+            "email": "existing@example.com",  # dubbele email
+            "username": "newuser",
+            "password": "NewPass123!",
+            "re_password": "NewPass123!",
+        }
+
+        resp = api_client.post(reverse("user-list"), payload, format="json")
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+        assert "email" in resp.data
+        assert any("already" in str(msg).lower() for msg in resp.data["email"])
+
     def test_weak_password_returns_400(self, api_client):
         payload = {
             "email": "foo@example.com",

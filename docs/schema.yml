@@ -3495,10 +3495,10 @@ paths:
         - Verify header `X-Webhook-Key` matches the configured secret.
         - Expect JSON body with `order_id` (UUID) and `status` ('paid' or 'failed').
         - If `status == 'paid'` and order is in `AWAITING_PAYMENT`, then:
-          1) Decrement `stock` and `stock_reserved` for each OrderItem within an atomic transaction.
+          1) Decrement `stock` and `stock_reserved` for each OrderItem within     an atomic transaction.
           2) Change order status to `CONFIRMED` and save.
           3) Dispatch Celery task `send_order_email_with_invoice.delay(order_id)`.
-        - Always return 200 OK with a JSON confirmation message `{ 'message': 'Webhook received' }`.
+        - Always return 200 OK with a JSON confirmation message   `{ 'message': 'Webhook received' }`.
       parameters:
       - in: header
         name: X-Webhook-Key
@@ -3933,9 +3933,8 @@ components:
           readOnly: true
         quantity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         price:
           type: string
           format: decimal
@@ -4321,9 +4320,8 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         image:
           type: string
           format: binary
@@ -4381,9 +4379,8 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         in_stock:
           type: boolean
           readOnly: true
@@ -4414,9 +4411,8 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         image:
           type: string
           format: binary

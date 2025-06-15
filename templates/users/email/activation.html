@@ -1,0 +1,14 @@
+{% block subject %}
+Activate your EcommerceAPI account
+{% endblock subject %}
+
+{% block text_body %}
+Hi {{ user.username }},
+
+To activate your account, go to:
+{{ protocol }}://{{ domain }}/activate/{{ uid }}/{{ token }}
+{% endblock text_body %}
+
+{% block html_body %}
+  {% include "users/email/activation_body.html" %}
+{% endblock html_body %}

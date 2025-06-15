@@ -2,13 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Product = {
-    readonly id: number;
+export type ProductRequest = {
     name: string;
     description: string;
     price: string;
     stock: number;
-    readonly in_stock: boolean;
-    image?: string | null;
+    image?: Blob | null;
 };
 

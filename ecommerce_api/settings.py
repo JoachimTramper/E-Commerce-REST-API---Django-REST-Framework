@@ -43,7 +43,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Database config
 
 if os.getenv("DATABASE_URL"):
-    # Productie (Railway): gebruik PostgreSQL via DATABASE_URL
+    # Production
     DATABASES = {
         "default": dj_database_url.config(
             default=os.getenv("DATABASE_URL"),
@@ -51,7 +51,7 @@ if os.getenv("DATABASE_URL"):
         )
     }
 else:
-    # Lokaal: fallback naar SQLite
+    # Local development or testing
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
@@ -102,6 +103,9 @@ INSTALLED_APPS = [
     "two_factor",
     "two_factor.plugins.phonenumber",
 ]
+
+# Django.contrib.sites site ID
+SITE_ID = 1
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -125,7 +129,7 @@ ROOT_URLCONF = "ecommerce_api.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -138,18 +142,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ecommerce_api.wsgi.application"
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     "default": dj_database_url.config(
-#         default=os.getenv("DATABASE_URL"),
-#         conn_max_age=600,
-#     )
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

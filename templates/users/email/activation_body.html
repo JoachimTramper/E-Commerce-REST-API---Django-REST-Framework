@@ -1,0 +1,16 @@
+{% extends "base_email.html" %}
+
+{% block title %}Activate Your EcommerceAPI Account{% endblock %}
+
+{% block content %}
+  <h1>Welcome to EcommerceAPI, {{ user.username }}!</h1>
+
+  <p>
+    To activate your account, please click
+    <a href="{{ protocol }}://{{ domain }}/activate/{{ uid }}/{{ token }}">
+      this link
+    </a>.
+  </p>
+
+  <p>If you did not sign up, you can safely ignore this email.</p>
+{% endblock %}

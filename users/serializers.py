@@ -97,6 +97,15 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This field may not be blank.")
         return value
 
+    def validate_email(self, value):
+        user = self.instance
+        if (
+            value
+            and User.objects.exclude(pk=user.pk).filter(email__iexact=value).exists()
+        ):
+            raise serializers.ValidationError("This email is already in use.")
+        return value
+
     def update(self, instance, validated_data):
         if "email" in validated_data:
             instance.email = validated_data["email"]

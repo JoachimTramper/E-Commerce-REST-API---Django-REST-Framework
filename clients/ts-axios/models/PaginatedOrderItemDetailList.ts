@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { OrderItemDetail } from './OrderItemDetail';
-export type Cart = {
-    readonly order_id: string;
-    readonly created_at: string;
-    readonly items: Array<OrderItemDetail>;
-    readonly total_amount: number;
+export type PaginatedOrderItemDetailList = {
+    count: number;
+    next?: string | null;
+    previous?: string | null;
+    results: Array<OrderItemDetail>;
 };
 
