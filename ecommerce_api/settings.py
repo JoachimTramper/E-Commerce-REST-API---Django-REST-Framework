@@ -351,19 +351,14 @@ DJOSER = {
     },
 }
 
-
 if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = os.getenv("EMAIL_HOST")
-    EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-    EMAIL_HOST_USER = os.getenv("EMAIL_USER")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@joachimtramper.dev")
-    SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    DEFAULT_FROM_EMAIL = "no-reply@joachimtramper.dev"
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Silk settings
 SILKY_PYTHON_PROFILER = True
