@@ -9,7 +9,7 @@ from djoser.email import ActivationEmail
 
 
 @pytest.mark.django_db
-def test_registration_sends_welcome_and_activation_mail(api_client, mailoutbox):
+def test_registration_sends_activation_email_only(api_client, mailoutbox):
     payload = {
         "email": "foo@bar.com",
         "username": "foobar",
@@ -19,26 +19,13 @@ def test_registration_sends_welcome_and_activation_mail(api_client, mailoutbox):
     resp = api_client.post(reverse("user-list"), payload, format="json")
     assert resp.status_code == 201, f"Registration failed: {resp.data}"
 
-    # check that at least 2 emails were sent (activation + welcome)
+    # Alleen activatiemail moet aanwezig zijn
     assert (
-        len(mailoutbox) >= 2
-    ), f"Expected activation + welcome emails, but got: {len(mailoutbox)}"
-
-    # find the activation email and check its custom subject
-    activation_email = next(
-        m
-        for m in mailoutbox
-        if isinstance(m, ActivationEmail) or "activate/" in getattr(m, "body", "")
-    )
+        len(mailoutbox) == 1
+    ), f"Expected only activation email, got {len(mailoutbox)}"
+    activation_email = mailoutbox[0]
+    assert "activate/" in activation_email.body
     assert "Activate your EcommerceAPI account" in activation_email.subject
-
-    # find the welcome email and check its custom subject
-    welcome_email = next(
-        m for m in mailoutbox if "Welcome to EcommerceAPI!" in m.subject
-    )
-    assert (
-        welcome_email is not None
-    ), f"No welcome email found, subjects: {[m.subject for m in mailoutbox]}"
 
 
 @pytest.mark.django_db

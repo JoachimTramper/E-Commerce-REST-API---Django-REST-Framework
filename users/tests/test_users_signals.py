@@ -1,12 +1,8 @@
 import base64
-from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from djoser.signals import user_registered
-
-from users.tasks import send_welcome_email
 
 User = get_user_model()
 
@@ -52,25 +48,3 @@ class TestTOTPDeviceSignal:
         device = TOTPDevice.objects.create(user=user, name="test", key=valid_key)
         device.refresh_from_db()
         assert device.key == valid_key, "Valid Base32 key should remain unchanged"
-
-
-@pytest.mark.django_db
-class TestUserRegisteredSignal:
-    def test_on_user_registered_sends_welcome_email(self):
-        """
-        When the Djoser user_registered signal is sent, send_welcome_email.delay(user.id)
-        should be called exactly once with the correct user ID.
-        """
-
-        # create a new user manually
-        user = User.objects.create_user(
-            username="alice", email="alice@example.com", password="Secret123!"
-        )
-
-        # patch the Celery task so delay() is not actually executed
-        with patch.object(send_welcome_email, "delay", autospec=True) as mock_delay:
-            # manually send the user_registered signal (Djoser would do this automatically)
-            user_registered.send(sender=User, request=None, user=user)
-
-            # verify that the Celery task was called exactly once with user.id
-            mock_delay.assert_called_once_with(user.id)
