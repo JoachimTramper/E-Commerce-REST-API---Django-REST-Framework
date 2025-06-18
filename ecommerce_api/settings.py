@@ -70,7 +70,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "web-production-7c555.up.railway.app",
-    "joachimtramper.github.io",
+    "joachimtramper.dev",
+    "www.joachimtramper.dev",
 ]
 
 # Application definition
@@ -345,6 +346,9 @@ DJOSER = {
         "user": "users.serializers.UserSerializer",
         "current_user": "users.serializers.UserSerializer",
     },
+    "PERMISSIONS": {
+        "activation": ["rest_framework.permissions.AllowAny"],
+    },
 }
 
 
@@ -371,6 +375,14 @@ SILKY_INTERCEPT_PERCENT = 0
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+
+if DEBUG:
+    DEFAULT_DOMAIN = "localhost:8000"
+    DEFAULT_PROTOCOL = "http"
+else:
+    DEFAULT_DOMAIN = "web-production-7c555.up.railway.app"
+    DEFAULT_PROTOCOL = "https"
+
 
 # Celery eager mode for tests only
 if os.environ.get("PYTEST_RUNNING") == "1":

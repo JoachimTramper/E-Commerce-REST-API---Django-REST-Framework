@@ -12,11 +12,9 @@ class TestUserEmailFlows:
         settings.CELERY_TASK_ALWAYS_EAGER = True
         settings.CELERY_TASK_EAGER_PROPAGATES = True
 
-    def test_welcome_mail_sent_after_registration(self, api_client, mailoutbox):
+    def test_activation_email_sent_on_registration(self, api_client, mailoutbox):
         """
-        After registering a new user we expect:
-         1) the Djoser activation email
-         2) our custom welcome email via Celery
+        After registering a new user, only activation email should be sent.
         """
         payload = {
             "email": "new@user.com",
@@ -27,11 +25,42 @@ class TestUserEmailFlows:
         resp = api_client.post(reverse("user-list"), payload, format="json")
         assert resp.status_code == 201
 
-        # exactly two emails should be sent
-        assert len(mailoutbox) == 2
+        # only activation email sent
+        assert len(mailoutbox) == 1
+        assert any("activate/" in m.body for m in mailoutbox)
 
-        # one of them must be our welcome mail
-        assert any("Welcome to EcommerceAPI!" in m.subject for m in mailoutbox)
+    def test_welcome_email_sent_after_activation(self, api_client, mailoutbox):
+        """
+        After activating a user, the welcome email should be sent.
+        """
+        # first register user
+        payload = {
+            "email": "new@user.com",
+            "username": "newuser",
+            "password": "Test1234!",
+            "re_password": "Test1234!",
+        }
+        api_client.post(reverse("user-list"), payload, format="json")
+
+        activation_email = mailoutbox[0]
+        match = re.search(
+            r"activate/(?P<uid>[^/]+)/(?P<token>[^/]+)", activation_email.body
+        )
+        assert match, "Activation link not found in email"
+        uid, token = match.group("uid", "token")
+
+        # activate user
+        activation_url = reverse("user-activation")
+        resp = api_client.post(
+            activation_url, {"uid": uid, "token": token}, format="json"
+        )
+        assert resp.status_code == 204
+
+        # now mailoutbox should contain welcome mail as well
+        subjects = [m.subject for m in mailoutbox]
+        assert any(
+            "Welcome to EcommerceAPI!" in subj for subj in subjects
+        ), f"Subjects found: {subjects}"
 
     def test_password_change_confirmation_mail_sent(self, api_client, user, mailoutbox):
         """

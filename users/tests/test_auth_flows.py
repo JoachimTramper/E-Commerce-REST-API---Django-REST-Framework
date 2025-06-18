@@ -1,10 +1,14 @@
 import re
+from unittest.mock import patch
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -33,11 +37,10 @@ class TestAuthFlows:
         assert resp.status_code == 200, f"Token refresh failed: {resp.data}"
         assert "access" in resp.data
 
-    def test_registration_and_activation(self, api_client, mailoutbox):
-        """
-        End-to-end test for user registration and email activation.
-        """
-        # register user with username, password, and re_password
+    @patch("users.tasks.send_welcome_email.delay")
+    def test_registration_and_activation(
+        self, mock_send_welcome_email_delay, api_client, mailoutbox
+    ):
         url = reverse("user-list")
         payload = {
             "email": "foo@bar.com",
@@ -45,47 +48,29 @@ class TestAuthFlows:
             "password": "UncommonP4ssw0rd!",
             "re_password": "UncommonP4ssw0rd!",
         }
+
         resp = api_client.post(url, payload, format="json")
-        assert resp.status_code == 201, f"Registration failed: {resp.data}"
+        assert resp.status_code == 201
 
-        # check activation mail
-        assert any(
-            "activate/" in m.body for m in mailoutbox
-        ), f"No activation mail, subjects: {[m.subject for m in mailoutbox]}"
+        # check activation email was sent
+        assert len(mailoutbox) == 1
+        assert any("activate/" in m.body for m in mailoutbox)
 
-        # check welcome mail
-        assert any(
-            "Welcome to EcommerceAPI!" in m.subject for m in mailoutbox
-        ), f"No welcome mail, subjects: {[m.subject for m in mailoutbox]}"
-
+        # get uid and token from activation email
         email_body = next(m.body for m in mailoutbox if "activate/" in m.body)
-
         match = re.search(r"activate/(?P<uid>[^/]+)/(?P<token>[^/]+)", email_body)
-        assert match, "Activation link not found in email body"
-        uid_from_link, token_from_link = match.group("uid", "token")
+        assert match
+        uid, token = match.group("uid", "token")
 
-        # find the ActivationEmail instance to access its context["user"].
-        from djoser.email import ActivationEmail
-
-        activation_email = next(m for m in mailoutbox if isinstance(m, ActivationEmail))
-        user = activation_email.context["user"]
-
-        # generate uid_bytes and token, based on user
-        from django.contrib.auth.tokens import default_token_generator
-        from django.utils.encoding import force_bytes
-        from django.utils.http import urlsafe_base64_encode
-
-        uid_bytes = urlsafe_base64_encode(force_bytes(user.pk))
-        token = default_token_generator.make_token(user)
-
-        # activate via API
+        # acctivate user via API
         activation_url = reverse("user-activation")
         resp2 = api_client.post(
-            activation_url, {"uid": uid_bytes, "token": token}, format="json"
+            activation_url, {"uid": uid, "token": token}, format="json"
         )
-        assert (
-            resp2.status_code == 204
-        ), f"Activation failed with valid token: {resp2.data}"
+        assert resp2.status_code == 204
+
+        user = User.objects.get(username="foobar")
+        mock_send_welcome_email_delay.assert_called_once_with(user.id)
 
     def test_password_reset_flow(self, api_client, mailoutbox, user):
         # request reset email

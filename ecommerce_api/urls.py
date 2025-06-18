@@ -3,11 +3,16 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from two_factor.urls import urlpatterns as tf_urls
 
 from shop.views.health import health_check
 from shop.views.payments import payment_webhook
+from users.views.activation import CustomUserViewSet
+
+custom_auth_router = DefaultRouter()
+custom_auth_router.register(r"users", CustomUserViewSet, basename="custom-users")
 
 urlpatterns = [
     # redirect root to Swagger UI
@@ -20,6 +25,7 @@ urlpatterns = [
     # browsable API login/logout
     path("api/auth/", include("rest_framework.urls")),
     # auth-flows via Djoser
+    path("api/auth/", include(custom_auth_router.urls)),
     path("api/auth/", include("djoser.urls")),
     path("api/auth/", include("djoser.urls.jwt")),
     # two-factor authentication

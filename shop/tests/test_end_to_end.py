@@ -43,8 +43,9 @@ def test_full_user_checkout_payment_flow(api_client, mailoutbox, product_factory
     )
     assert resp_registration.status_code == status.HTTP_201_CREATED
 
-    # expect at least 2 emails: activation + welcome
-    assert len(mailoutbox) >= 2
+    # expect exactly 1 email after registration (activation email)
+    assert len(mailoutbox) == 1
+    assert "activate/" in mailoutbox[0].body
 
     # --------------------------------------------------
     # 2) Activate account by generating uid/token (avoid fragile URL parsing)
@@ -60,6 +61,10 @@ def test_full_user_checkout_payment_flow(api_client, mailoutbox, product_factory
         reverse("user-activation"), {"uid": uidb64, "token": token}, format="json"
     )
     assert resp_activation.status_code == status.HTTP_204_NO_CONTENT
+
+    # now a welcome email should be sent
+    assert len(mailoutbox) == 2
+    assert any("Welcome to EcommerceAPI!" in m.subject for m in mailoutbox)
 
     # --------------------------------------------------
     # 3) Login: POST /auth/jwt/create/ (TokenObtainPairSerializer)

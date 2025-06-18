@@ -10,5 +10,5 @@ You can log in at {{ protocol }}://{{ domain }}/login
 {% endblock text_body %}
 
 {% block html_body %}
-  {% include "users/email/welcome_body.html" %}
+  {% include "users/email/welcome_body.html" with user=user domain=domain protocol=protocol %}
 {% endblock html_body %}
