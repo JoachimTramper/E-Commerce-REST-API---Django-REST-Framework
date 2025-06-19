@@ -355,7 +355,7 @@ if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    EMAIL_BACKEND = "django_sendgrid_v5.backends.SendgridBackend"
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
     DEFAULT_FROM_EMAIL = os.getenv(
         "DEFAULT_FROM_EMAIL", "Ecommerce API <no-reply@joachimtramper.dev>"
@@ -369,7 +369,7 @@ SILKY_ANALYZE_QUERIES = False
 SILKY_INTERCEPT_PERCENT = 0
 
 # Celery settings
-CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 
@@ -381,12 +381,13 @@ else:
     DEFAULT_PROTOCOL = os.getenv("DEFAULT_PROTOCOL", "https")
 
 
-# Celery eager mode for tests only
-if os.environ.get("PYTEST_RUNNING") == "1":
+# Celery eager mode for dev
+if DEBUG:
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
 else:
     CELERY_TASK_ALWAYS_EAGER = False
+    CELERY_TASK_EAGER_PROPAGATES = False
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
