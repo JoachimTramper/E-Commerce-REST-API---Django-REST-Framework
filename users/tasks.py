@@ -9,6 +9,9 @@ User = get_user_model()
 
 @shared_task
 def send_welcome_email(user_id):
+    print("🐞 [DEBUG] EMAIL_BACKEND =", settings.EMAIL_BACKEND)
+    print("🐞 [DEBUG] SENDGRID_API_KEY =", bool(settings.SENDGRID_API_KEY))
+    print("🐞 [DEBUG] DEFAULT_FROM_EMAIL =", settings.DEFAULT_FROM_EMAIL)
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:

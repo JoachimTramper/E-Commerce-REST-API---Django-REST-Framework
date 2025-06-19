@@ -355,7 +355,7 @@ if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    EMAIL_BACKEND = "django_sendgrid_v5.backends.SendgridBackend"
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
     DEFAULT_FROM_EMAIL = os.getenv(
         "DEFAULT_FROM_EMAIL", "Ecommerce API <no-reply@joachimtramper.dev>"
