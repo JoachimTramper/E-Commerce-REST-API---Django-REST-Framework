@@ -357,7 +357,9 @@ if DEBUG:
 else:
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-    DEFAULT_FROM_EMAIL = "no-reply@joachimtramper.dev"
+    DEFAULT_FROM_EMAIL = os.getenv(
+        "DEFAULT_FROM_EMAIL", "Ecommerce API <no-reply@joachimtramper.dev>"
+    )
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Silk settings
@@ -375,8 +377,8 @@ if DEBUG:
     DEFAULT_DOMAIN = "localhost:8000"
     DEFAULT_PROTOCOL = "http"
 else:
-    DEFAULT_DOMAIN = "web-production-7c555.up.railway.app"
-    DEFAULT_PROTOCOL = "https"
+    DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "www.joachimtramper.dev")
+    DEFAULT_PROTOCOL = os.getenv("DEFAULT_PROTOCOL", "https")
 
 
 # Celery eager mode for tests only
