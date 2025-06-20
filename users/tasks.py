@@ -23,7 +23,7 @@ def send_welcome_email(user_id):
     }
 
     subject = "Welcome to EcommerceAPI!"
-    html_content = render_to_string("users/email/welcome.html", context)
+    html_content = render_to_string("users/email/welcome_body.html", context)
     text_content = render_to_string("users/email/welcome.txt", context)
 
     # Obtain the default mail connection (respects settings.EMAIL_BACKEND)
