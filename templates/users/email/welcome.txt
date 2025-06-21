@@ -2,7 +2,7 @@ Hi {{ user.username }},
 
 Thank you for registering at EcommerceAPI! We're happy to have you on board.
 
-You can log in here: {{ protocol }}://{{ domain }}/auth/jwt/create/
+You can log in here: {{ protocol }}://{{ domain }}/api/auth/jwt/create/
 
 If you have any questions, feel free to reply to this email.
 
