@@ -48,25 +48,18 @@
   <body>
     <h1>Order Invoice #{{ order.order_number }}</h1>
     <p>
-      <strong>Customer:</strong>
-      {% if order.user.first_name and order.user.last_name %}
-        {{ order.user.first_name }} {{ order.user.last_name }}
-      {% elif order.user.first_name %}
-        {{ order.user.first_name }}
-      {% elif order.user.last_name %}
-        {{ order.user.last_name }}
-      {% else %}
-        {{ order.user.username }}
-      {% endif %}
+      <strong>Customer:</strong>{{ order.user.first_name|default:order.user.username }}
     </p>
-    <p><strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}</p>
+    <p>
+      <strong>Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}
+    </p>
 
     <table>
       <thead>
         <tr>
           <th>Product</th>
           <th>Quantity</th>
-          <th>Price (each)</th>
+          <th>Unit price</th>
           <th>Subtotal</th>
         </tr>
       </thead>

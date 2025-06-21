@@ -1,26 +1,16 @@
-{% extends "base_email.html" %}
+{% block subject %}
+Your Order #{{ order.order_number }} Confirmation & Invoice
+{% endblock subject %}
 
-{% block title %}Order Confirmation{% endblock %}
+{% block text_body %}
+Hi {{ order.user.first_name|default:order.user.username }},
 
-{% block content %}
-      <p>
-        Hello
-        {% if order.user.first_name and order.user.last_name %}
-          {{ order.user.first_name }} {{ order.user.last_name }}
-        {% elif order.user.first_name %}
-          {{ order.user.first_name }}
-        {% elif order.user.last_name %}
-          {{ order.user.last_name }}
-        {% else %}
-          {{ order.user.username }}
-        {% endif %},
-      </p>
+Thank you for your order #{{ order.order_number }}.
+Total amount: €{{ order.total_amount }}
 
-      <p>
-        Thank you for your order #{{ order.order_number }}.
-      </p>
+Please find your invoice attached.
+{% endblock text_body %}
 
-      <p>
-        Please find your invoice attached to this email.
-      </p>
-{% endblock %}
+{% block html_body %}
+  {% include "shop/email/order_confirmation_body.html" %}
+{% endblock html_body %}

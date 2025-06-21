@@ -6,4 +6,7 @@ You can log in here: {{ protocol }}://{{ domain }}/api/auth/jwt/create/
 
 If you have any questions, feel free to reply to this email.
 
-– The EcommerceAPI Team
+Kind regards,
+
+
+The EcommerceAPI Team

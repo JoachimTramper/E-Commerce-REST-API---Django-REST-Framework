@@ -3933,8 +3933,9 @@ components:
           readOnly: true
         quantity:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
         price:
           type: string
           format: decimal
@@ -4320,8 +4321,9 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
         image:
           type: string
           format: binary
@@ -4379,8 +4381,9 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
         in_stock:
           type: boolean
           readOnly: true
@@ -4411,8 +4414,9 @@ components:
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         stock:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
         image:
           type: string
           format: binary
@@ -4671,7 +4675,5 @@ components:
       scheme: bearer
       bearerFormat: JWT
 servers:
-- url: https://web-production-7c555.up.railway.app/api
-  description: Production API on Railway
 - url: /api
   description: API base path

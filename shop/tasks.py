@@ -5,7 +5,7 @@ from datetime import timedelta
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mail
 from django.db import transaction
 from django.db.models import F
 from django.template.loader import render_to_string
@@ -80,17 +80,23 @@ def send_order_email_with_invoice(order_id):
 
     buffer.seek(0)
 
-    # render HTML email body
-    message = render_to_string("shop/email/order_confirmation.html", {"order": order})
+    context = {
+        "order": order,
+        "domain": getattr(settings, "DEFAULT_DOMAIN", "example.com"),
+        "protocol": getattr(settings, "DEFAULT_PROTOCOL", "https"),
+    }
 
-    email = EmailMessage(
+    text_content = render_to_string("shop/email/order_confirmation.txt", context)
+    html_content = render_to_string("shop/email/order_confirmation.html", context)
+
+    email = EmailMultiAlternatives(
         subject=f"Your Order #{order.order_number} Confirmation & Invoice",
-        body=message,
+        body=text_content,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[order.user.email],
     )
-    email.content_subtype = "html"
-    email.attach("invoice.pdf", buffer.read(), "application/pdf")
+    email.attach_alternative(html_content, "text/html")
+    email.attach(f"invoice_{order.order_number}.pdf", buffer.read(), "application/pdf")
     email.send()
 
     return f"Order email with invoice sent for order {order_id}"

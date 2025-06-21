@@ -25,7 +25,10 @@ class TestSendOrderEmailWithInvoice:
         assert result.startswith("Order email with invoice sent")
         assert len(mail.outbox) == 1
         assert mail.outbox[0].to == [order.user.email]
-        assert any(att[0] == "invoice.pdf" for att in mail.outbox[0].attachments)
+        assert any(
+            att[0] == f"invoice_{order.order_number}.pdf"
+            for att in mail.outbox[0].attachments
+        )
 
     def test_invalid_order_id(self):
         fake_uuid = uuid.uuid4()
