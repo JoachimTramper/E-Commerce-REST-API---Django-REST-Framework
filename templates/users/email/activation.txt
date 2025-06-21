@@ -1,0 +1,9 @@
+Hi {{ user.username }},
+
+To activate your account, go to:
+{{ protocol }}://{{ domain }}/activate/{{ uid }}/{{ token }}
+
+Kind regards,
+
+
+The EcommerceAPI Team

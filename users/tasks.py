@@ -9,13 +9,12 @@ User = get_user_model()
 
 @shared_task
 def send_welcome_email(user_id):
-    # Fetch the user; exit early if not found
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return f"User {user_id} not found"
 
-    # Prepare template context
+    # prepare template context
     context = {
         "user": user,
         "domain": getattr(settings, "DEFAULT_DOMAIN", "example.com"),
@@ -26,10 +25,10 @@ def send_welcome_email(user_id):
     html_content = render_to_string("users/email/welcome_body.html", context)
     text_content = render_to_string("users/email/welcome.txt", context)
 
-    # Obtain the default mail connection (respects settings.EMAIL_BACKEND)
+    # obtain the default mail connection (respects settings.EMAIL_BACKEND)
     connection = get_connection()
 
-    # Build multipart email
+    # build multipart email
     email = EmailMultiAlternatives(
         subject=subject,
         body=text_content,
@@ -39,7 +38,7 @@ def send_welcome_email(user_id):
     )
     email.attach_alternative(html_content, "text/html")
 
-    # Send the email
+    # send the email
     email.send(fail_silently=False)
 
     return f"Welcome email sent to {user.email}"
