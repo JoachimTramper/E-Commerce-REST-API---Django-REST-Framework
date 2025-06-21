@@ -1,0 +1,12 @@
+Hi {{ order.user.first_name|default:order.user.username }},
+
+Thank you for your order #{{ order.order_number }}.
+Total amount: €{{ order.total_amount }}
+
+Download your invoice here:
+{{ protocol }}://{{ domain }}/invoices/{{ order.order_number }}.pdf
+
+Kind regards,
+
+
+The EcommerceAPI Team
