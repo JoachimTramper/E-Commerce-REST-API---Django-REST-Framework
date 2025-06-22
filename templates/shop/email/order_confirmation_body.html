@@ -12,19 +12,19 @@
   <table>
     <thead>
       <tr>
-        <th align="left">Product</th>
-        <th align="left">Quantity</th>
-        <th align="left">Unit price</th>
-        <th align="left">Total</th>
+        <th style="padding:8px; border:1px solid #ccc; text-align:left;">Product</th>
+        <th style="padding:8px; border:1px solid #ccc; text-align:left;">Quantity</th>
+        <th style="padding:8px; border:1px solid #ccc; text-align:left;">Unit price</th>
+        <th style="padding:8px; border:1px solid #ccc; text-align:left;">Subtotal</th>
       </tr>
     </thead>
     <tbody>
       {% for item in order.items.all %}
       <tr>
-        <td>{{ item.product.name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>€{{ item.price|floatformat:2 }}</td>
-        <td>€{{ item.item_subtotal|floatformat:2 }}</td>
+        <td style="padding:8px; border:1px solid #ccc; text-align:left;">{{ item.product.name }}</td>
+        <td style="padding:8px; border:1px solid #ccc; text-align:left;">{{ item.quantity }}</td>
+        <td style="padding:8px; border:1px solid #ccc; text-align:left;">€{{ item.price|floatformat:2 }}</td>
+        <td style="padding:8px; border:1px solid #ccc; text-align:left;">€{{ item.item_subtotal|floatformat:2 }}</td>
       </tr>
       {% endfor %}
     </tbody>

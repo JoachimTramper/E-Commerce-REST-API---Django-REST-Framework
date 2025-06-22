@@ -87,7 +87,7 @@ def send_order_email_with_invoice(order_id):
     }
 
     text_content = render_to_string("shop/email/order_confirmation.txt", context)
-    html_content = render_to_string("shop/email/order_confirmation.html", context)
+    html_content = render_to_string("shop/email/order_confirmation_body.html", context)
 
     email = EmailMultiAlternatives(
         subject=f"Your Order #{order.order_number} Confirmation & Invoice",
