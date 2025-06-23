@@ -237,7 +237,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "CONTACT": {
         "name": "Joachim Tramper",
-        "email": "joachimtramper@gmail.com",
+        "email": "info@joachimtramper.dev",
         "url": "https://github.com/joachimtramper",
     },
     "SERVE_INCLUDE_SCHEMA": False,
@@ -347,6 +347,10 @@ DJOSER = {
 }
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
+
+TEMPLATED_EMAILS = {
+    "SUBJECT_PREFIX": "",
+}
 
 if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
