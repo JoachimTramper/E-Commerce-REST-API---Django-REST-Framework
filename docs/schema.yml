@@ -6,7 +6,7 @@ info:
     and authentication '
   contact:
     name: Joachim Tramper
-    email: joachimtramper@gmail.com
+    email: info@joachimtramper.dev
     url: https://github.com/joachimtramper
 paths:
   /auth/jwt/create/:
