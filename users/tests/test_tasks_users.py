@@ -95,5 +95,6 @@ class TestUserEmailFlows:
         # now two emails: reset-link + confirmation
         assert len(mailoutbox) == 2
         assert any(
-            "password has been successfully changed" in m.subject for m in mailoutbox
+            "Your EcommerceAPI password has been changed" in m.subject
+            for m in mailoutbox
         ), f"Unexpected subjects: {[m.subject for m in mailoutbox]}"
