@@ -334,7 +334,7 @@ DJOSER = {
     "EMAIL": {
         "activation": "users.email.CustomActivationEmail",
         "password_reset": "users.email.CustomPasswordResetEmail",
-        "password_reset_confirm": "users.email.CustomPasswordResetConfirmEmail",
+        "password_changed_confirmation": "users.email.CustomPasswordResetConfirmEmail",
     },
     "SERIALIZERS": {
         "user_create": "users.serializers.RegisterSerializer",
