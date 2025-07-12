@@ -1,6 +1,12 @@
 # E-Commerce REST API
 
-An API built with Django REST Framework to support an e-commerce platform. Key features include:
+**Demo video:**
+https://www.youtube.com/watch?v=iGAfOA99M4M
+
+**Admin demo video:**
+https://www.youtube.com/watch?v=qXba4KJ0Xi0
+
+A backend API built with Django REST Framework to support an e-commerce platform. Key features include:
 
 **Robust Cart & Checkout Flow**
 
