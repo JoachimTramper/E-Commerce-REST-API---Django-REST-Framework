@@ -237,7 +237,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "CONTACT": {
         "name": "Joachim Tramper",
-        "email": "info@joachimtramper.dev",
+        "email": "joachimtramper@gmail.com",
         "url": "https://github.com/joachimtramper",
     },
     "SERVE_INCLUDE_SCHEMA": False,
@@ -334,7 +334,7 @@ DJOSER = {
     "EMAIL": {
         "activation": "users.email.CustomActivationEmail",
         "password_reset": "users.email.CustomPasswordResetEmail",
-        "password_changed_confirmation": "users.email.CustomPasswordResetConfirmEmail",
+        "password_reset_confirm": "users.email.CustomPasswordResetConfirmEmail",
     },
     "SERIALIZERS": {
         "user_create": "users.serializers.RegisterSerializer",
@@ -347,10 +347,6 @@ DJOSER = {
 }
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
-
-TEMPLATED_EMAILS = {
-    "SUBJECT_PREFIX": "",
-}
 
 if DEBUG:
     # In development, don’t attempt real SMTP—print mails to the console
