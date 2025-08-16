@@ -121,7 +121,7 @@ The API is available at:
   `https://web-production-7c555.up.railway.app`
 
 - **Custom domain:**
-  `https://www.joachimtramper.dev`
+  `https://api.joachimtramper.dev`
 
 > **Note:**
 > In the live production environment, the Celery worker and beat scheduler are normally disabled.
@@ -131,20 +131,20 @@ The API is available at:
 
 1. **JWT via cURL / SDK**
 
-   - **Endpoint:** `POST https://www.joachimtramper.dev/api/auth/jwt/create/`
+   - **Endpoint:** `POST https://api.joachimtramper.dev/api/auth/jwt/create/`
    - Send your email and password to receive an `access` and `refresh` token.
    - Include the header `Authorization: Bearer <access-token>` in subsequent API calls.
 
 2. **Swagger-UI (“Try it out”)**
 
-   - Visit https://www.joachimtramper.dev/api/docs/
+   - Visit https://api.joachimtramper.dev/api/docs/
    - Expand the **POST /api/auth/jwt/create/** endpoint, click **Try it out**, and enter your email/password.
    - Execute the request to receive the `access` token in the response body.
    - Click the **Authorize** button (lock icon), paste the `Bearer <access-token>` into the value field, and hit **Authorize**.
    - Now you can call any other endpoint directly in the UI with your JWT authenticated.
 
 3. **DRF Browsable API Login**
-   - Go to https://www.joachimtramper.dev/api/auth/login/
+   - Go to https://api.joachimtramper.dev/api/auth/login/
    - Log in with your email and password for session-based access.
    - Useful for manual testing of endpoints in the Django REST Framework UI.
 

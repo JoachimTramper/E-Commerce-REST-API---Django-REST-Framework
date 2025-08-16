@@ -70,8 +70,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "web-production-7c555.up.railway.app",
-    "joachimtramper.dev",
-    "www.joachimtramper.dev",
+    "api.joachimtramper.dev",
 ]
 
 # Application definition
@@ -377,7 +376,7 @@ if DEBUG:
     DEFAULT_DOMAIN = "localhost:8000"
     DEFAULT_PROTOCOL = "http"
 else:
-    DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "www.joachimtramper.dev")
+    DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "api.joachimtramper.dev")
     DEFAULT_PROTOCOL = os.getenv("DEFAULT_PROTOCOL", "https")
 
 
